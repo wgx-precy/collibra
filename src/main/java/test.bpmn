@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <collaboration id="Collaboration">
+    <participant id="pool1" name="Test Dropdown Selection" processRef="testDropdown"></participant>
+  </collaboration>
+  <process id="testDropdown" name="Test Dropdown Workflow" isExecutable="true">
+    <documentation>This process can be used to propose new business terms. The term will be created using the entered characteristics and placed in the "Data Governance Council" community.</documentation>
+    <laneSet id="laneSet_testDropdown">
+      <lane id="lane1">
+        <flowNodeRef>endevent1</flowNodeRef>
+        <flowNodeRef>startevent1</flowNodeRef>
+        <flowNodeRef>createDropDownOptions</flowNodeRef>
+        <flowNodeRef>userForm</flowNodeRef>
+      </lane>
+    </laneSet>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <startEvent id="startevent1" name="testDropdownStart" activiti:initiator="startUser"></startEvent>
+    <scriptTask id="createDropDownOptions" name="create dropdown options" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********WGX CREATE DROPDOWN OPTION SCRIPT******");
+def dropdownOptions = "opt1,opt2,opt3,opt4";
+loggerComponent.info("[[ LOGGING ]] - ********DROP DOWN OPTIONS******" + dropdownOptions );</script>
+    </scriptTask>
+    <userTask id="userForm" name="user form" activiti:candidateUsers="user(${startUser})">
+      <extensionElements>
+        <activiti:formProperty id="testSelected" name="Select" type="term" required="true">
+          <activiti:value id="multiValued" name="false"></activiti:value>
+          <activiti:value id="proposedFixed" name="true"></activiti:value>
+          <activiti:value id="proposedValues" name="${dropdownOptions}"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="formName" name="form name" type="string" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="createDropDownOptions"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="createDropDownOptions" targetRef="userForm"></sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="userForm" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+      <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
+        <omgdc:Bounds height="150.0" width="671.0" x="90.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
+        <omgdc:Bounds height="150.0" width="651.0" x="110.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="670.0" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="180.0" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="createDropDownOptions" id="BPMNShape_createDropDownOptions">
+        <omgdc:Bounds height="55.0" width="105.0" x="280.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="userForm" id="BPMNShape_userForm">
+        <omgdc:Bounds height="55.0" width="105.0" x="480.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="215.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="280.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="385.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="480.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="585.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="670.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <collaboration id="Collaboration">
+    <participant id="pool1" name="DQMR Register" processRef="dqmrConsumerRegistration"></participant>
+  </collaboration>
+  <process id="dqmrConsumerRegistration" name="process_pool1" isExecutable="true">
+    <laneSet id="laneSet_dqmrConsumerRegistration">
+      <lane id="lane1">
+        <flowNodeRef>endevent1</flowNodeRef>
+        <flowNodeRef>usertask1</flowNodeRef>
+        <flowNodeRef>startevent1</flowNodeRef>
+        <flowNodeRef>exclusivegateway1</flowNodeRef>
+        <flowNodeRef>scripttask2</flowNodeRef>
+        <flowNodeRef>usertask2</flowNodeRef>
+        <flowNodeRef>scripttask3</flowNodeRef>
+        <flowNodeRef>usertask3</flowNodeRef>
+        <flowNodeRef>scripttask4</flowNodeRef>
+      </lane>
+    </laneSet>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <userTask id="usertask1" name="Select Registration Type for DQMR: ${item.name}" activiti:candidateUsers="user(${startUser})">
+      <documentation>Please select method of registration for DQMR: &lt;b&gt;${item.name}&lt;/b&gt;</documentation>
+      <extensionElements>
+        <activiti:formProperty id="regType" name="Please choose a type of registration: " type="enum" required="true">
+          <activiti:value id="approved" name="Register an officially approved Usage (Model, High-Priority Reporter or Critical Business Process)"></activiti:value>
+          <activiti:value id="unapproved" name="Register any other usage (that is not officially an approved usage)"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <startEvent id="startevent1" name="Start" activiti:initiator="startUser">
+      <extensionElements>
+        <activiti:formProperty id="UUID_Group_AEConsumer" name="UUID of the group AE-Consumer" type="string" default="7cf60a44-e2ec-4e8e-be8e-10f26c1f208d" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_ReportTypeConsumer" name="UUID of the Attribute Report Type Consumer" type="string" default="08d095d1-43eb-4c2e-bc29-dea1d54d142f" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_ModelTypeConsumer" name="UUID of the attribute Model Type Consumer" type="string" default="d1b7681f-e5b8-4038-bfd8-9ac3f0ad8290" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_CriticalBPConsumers" name="UUID of the attribute Critical Business Process consumers" type="string" default="b6593888-cee9-43a0-98af-b92f6262d4f9" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_AEConsumer" name="UUID Of the role AE-Consumer" type="string" default="6eb605ac-f738-4122-8754-233d9c1e9a20" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_DataUsageType" name="UUID of the attribute Data Usage Type" type="string" default="30ecf356-c918-4bc9-897d-e6e5e687f281" readable="false"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="usertask1"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="exclusivegateway1"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <scriptTask id="scripttask2" name="Get List of AE-Consumer Group" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("////  SCRIPT 2 /////");
+
+aeConsumerUsers = ""
+consumerGroup = userComponent.getGroup(UUID_Group_AEConsumer)
+count = 0
+
+consumerGroup.getUsers().each { user -&gt; 
+  count = count++
+  loggerComponent.info("//// Found User //// " + user.getUserName());
+  if(aeConsumerUsers == ""){
+    aeConsumerUsers = user.getUserName()
+  }else{
+    aeConsumerUsers = aeConsumerUsers + "," + user.getUserName()
+  }
+}
+  
+defaultUser = userComponent.getUserByName(startUser).getUserName();
+
+loggerComponent.info("//// Total Users Found //// " + count);
+execution.setVariable('aeConsumerUsers', aeConsumerUsers)
+execution.setVariable('defaultUser', defaultUser)</script>
+    </scriptTask>
+    <sequenceFlow id="flow4" sourceRef="exclusivegateway1" targetRef="scripttask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${regType=="unapproved"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="scripttask2" targetRef="usertask2"></sequenceFlow>
+    <userTask id="usertask2" name="Select Usage Type " activiti:candidateUsers="user(${startUser})">
+      <documentation>Select Usage Type for: ${item.name}</documentation>
+      <extensionElements>
+        <activiti:formProperty id="usageType" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Select usage type&lt;/b&gt;" type="enum" default="false" required="true">
+          <activiti:value id="criticalBusinessProcess" name="Business Process"></activiti:value>
+          <activiti:value id="model" name="Business Model"></activiti:value>
+          <activiti:value id="report" name="Business Report"></activiti:value>
+          <activiti:value id="other" name="Other"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="aeConsumerPicked" name="Enter name of AE-Consumer if you are not the AE-Consumer" type="user" default="${defaultUser}">
+          <activiti:value id="multiValue" name="false"></activiti:value>
+          <activiti:value id="proposedFixed" name="true"></activiti:value>
+          <activiti:value id="proposedValues" name="${aeConsumerUsers}"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow7" sourceRef="usertask2" targetRef="scripttask3"></sequenceFlow>
+    <scriptTask id="scripttask3" name="Set Consumer Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>import com.collibra.dgc.core.model.user.*;
+import com.collibra.dgc.core.exceptions.DGCException;
+
+loggerComponent.info("******* INSIDE NON OFFICIAL REGISTRATION LINK SCRIPT *******");
+dqmrUsageType = usageType
+
+loggerComponent.info("// aeConsumerPicked value is equal to //" + aeConsumerPicked);
+
+chosenUser = userComponent.getUserByName(aeConsumerPicked).getFullName();
+startUserString = userComponent.getUserByName(startUser).getFullName();
+boolean userInAEConsumerGroup = false
+def userConsumer = startUserString
+
+if(chosenUser.equals(startUserString)){
+  consumerGroup = userComponent.getGroup(UUID_Group_AEConsumer)
+  consumerGroup.getUsers().each { user -&gt; 
+  
+  loggerComponent.info("//// Inside AEConsumerPicked False Block //// " + user.getUserName());
+  if(startUserString.equals(user.getFullName())){
+    userInAEConsumerGroup = true
+  }
+}
+}else {
+  userConsumerSelected = userComponent.getUserByName(aeConsumerPicked).getFullName();
+  userConsumer = userConsumerSelected
+  loggerComponent.info("//// Inside AEConsumerPicked True Block //// " + userConsumer);
+  userInAEConsumerGroup = true
+}
+
+if(!userInAEConsumerGroup){
+  dgcError = new DGCException("You are not an AE-Consumer.  Please chose a valid AE-Consumer user.");
+  dgcError.setTitleCode ('Non AE-Consumer Chosen');
+  throw dgcError;
+}else{
+  loggerComponent.info("//// INSIDE THE ELSE BLOCK !!! //// ");
+  boolean userAlreadyExists = false
+  consumerId = userComponent.getUserByName(aeConsumerPicked).getId();
+  rightsComponent.getMembersByResourceAndRole(item.id, UUID_Role_AEConsumer).each { user -&gt;
+    loggerComponent.info("//// INSIDE THE CHECK TO SEE IF USER ALREADY EXISTS !!! //// " + user);
+    userId = user.getOwnerId()
+    loggerComponent.info("//// userId //// " + userId);
+    loggerComponent.info("//// consumerId //// " + consumerId);
+    if(consumerId==userId){
+      userAlreadyExists = true
+      loggerComponent.info("//// FOUND USER !!! //// " + userAlreadyExists);
+    }
+  }
+  if(!userAlreadyExists){
+    rightsComponent.addMember(consumerId, UUID_Role_AEConsumer, item.id)
+  }
+}
+
+loggerComponent.info("//// userInAEConsumerGroup Flag is Set to: //// " + userInAEConsumerGroup);
+
+
+loggerComponent.info("******* INSIDE NON OFFICIAL REGISTRATION LINK SCRIPT ******* User Name " + userConsumer);
+
+def extReportType = "";
+def extModelType = "";
+def extProcessType = "";
+def newReportType = "";
+def newModelType = "";
+def newProcessType = "";
+def extModelTypeId;
+def extReportTypeId;
+def extProcessTypeId;
+
+//Usage Type Report
+if(dqmrUsageType.equals("report"))
+{
+
+
+
+
+  //get Report Type Consumers attribute if it exists
+  if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).isEmpty())
+  {
+
+
+
+    extReportType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).get(0).getStringValue();
+    extReportTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).get(0).getId();
+
+    
+    if(!extReportType.toString().contains(userConsumer.toString()))
+    {
+    newReportType = extReportType + ", " + userConsumer;
+    attributeComponent.changeStringAttributeLongExpression(extReportTypeId,newReportType);
+    }
+    
+  }
+  else
+  //if there is no attribute currently existing
+  {
+  newReportType = userConsumer;
+  attributeComponent.addStringAttribute(item.id,UUID_Attr_ReportTypeConsumer,newReportType.toString());
+  } 
+}
+
+//Usage Type Model
+if(dqmrUsageType.equals("model"))
+{
+  //get Model Type Consumers attribute if it exists
+  if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).isEmpty()){
+  extModelType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).get(0).getStringValue();
+  extModelTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).get(0).getId();
+  
+    if(!extModelType.toString().contains(userConsumer.toString()))
+    {
+      newModelType = extModelType + ", " + userConsumer;
+      attributeComponent.changeStringAttributeLongExpression(extModelTypeId,newModelType);
+    }
+  }
+  else
+  //if there is no attribute currently existing
+  {
+  newModelType = userConsumer;
+  attributeComponent.addStringAttribute(item.id,UUID_Attr_ModelTypeConsumer,newModelType.toString());
+  } 
+}
+
+//Usage type Critical Business Process
+if(dqmrUsageType.equals("criticalBusinessProcess"))
+{
+  //get Process Type Consumers attribute if it exists
+  if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).isEmpty()){
+  extProcessType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).get(0).getStringValue();
+  extProcessTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).get(0).getId();
+      if(!extProcessType.toString().contains(userConsumer.toString()))
+      {
+      newProcessType = extProcessType + ", " + userConsumer;
+      attributeComponent.changeStringAttributeLongExpression(extProcessTypeId,newProcessType);
+      }
+  }
+  else
+  //if there is no attribute currently existing
+  {
+  newProcessType = userConsumer;
+  attributeComponent.addStringAttribute(item.id,UUID_Attr_CriticalBPConsumers,newProcessType.toString());
+  } 
+}
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow8" sourceRef="scripttask3" targetRef="endevent1"></sequenceFlow>
+    <userTask id="usertask3" name="Select Usage" activiti:candidateUsers="user(${startUser})">
+      <documentation>Select Data Usage for DQMR: ${item.name}</documentation>
+      <extensionElements>
+        <activiti:formProperty id="dataUsagesPicked" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Data Usage(s) for DQ Metric Registration&lt;/end&gt;" type="term" required="true">
+          <activiti:value id="multiValue" name="true"></activiti:value>
+          <activiti:value id="conceptType" name="445dbf2f-79cc-4ae4-9a8e-a63cabf590a7"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <scriptTask id="scripttask4" name="Set Consumer Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>import com.collibra.dgc.core.exceptions.DGCException;
+
+loggerComponent.info("******* INSIDE OFFCIAL DATA USAGE REGISTRATION *******");
+
+loggerComponent.info("******* Data Usages Picked:  *******" + dataUsagesPicked);
+
+dataUsagesPicked.split(',').each { duid -&gt;
+
+  //checks if AE-Consumer role is set on DU and throws exception if it isn't
+  du = termComponent.getTerm(duid)
+  if(rightsComponent.getMembersByResourceAndRole(du.id, UUID_Role_AEConsumer).isEmpty()){
+    loggerComponent.info("******* Found Data Usage Without AE-Consumer *******");
+    dgcError = new DGCException("Data Usage: " + du.getSignifier() + " does not have an AE-Consumer.  Please choose Data Usages with an AE-Consumer.");
+    dgcError.setTitleCode ('Data Usage Does Not Have an AE-Consumer Role');
+    throw dgcError;
+  }else {
+  //else block goes through each AE-Consumer in each DU, checks the Data Usage Type and sets 
+  //the AE-Consumer as the role of the DQMR and as the respective attribute value
+    rightsComponent.getMembersByResourceAndRole(du.id, UUID_Role_AEConsumer).each { mem -&gt;
+      aeConsumerId = mem.getOwnerId()
+      userConsumer = mem.getUser().getFullName()
+
+      boolean userAlreadyExists = false
+      consumerId = aeConsumerId
+      rightsComponent.getMembersByResourceAndRole(item.id, UUID_Role_AEConsumer).each { user -&gt;
+        loggerComponent.info("//// INSIDE THE CHECK TO SEE IF USER ALREADY EXISTS !!! //// " + user);
+        userId = user.getOwnerId()
+        loggerComponent.info("//// userId //// " + userId);
+        loggerComponent.info("//// consumerId //// " + consumerId);
+        if(consumerId==userId){
+          userAlreadyExists = true
+          loggerComponent.info("//// FOUND USER !!! //// " + userAlreadyExists);
+        }
+      }
+      if(!userAlreadyExists){
+       rightsComponent.addMember(consumerId, UUID_Role_AEConsumer, item.id)
+      }
+
+
+      dataUsageType = attributeComponent.getAttributesOfTypeForRepresentation(du.id,UUID_Attr_DataUsageType).get(0).getStringValue();
+      loggerComponent.info("******* DATA USAGE TYPE IS ******* " + dataUsageType);
+      dqmrUsageType = dataUsageType
+      //Usage Type Report
+      if(dqmrUsageType.equals("Business Report"))
+      {
+      //get Report Type Consumers attribute if it exists
+        if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).isEmpty())
+        {
+          extReportType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).get(0).getStringValue();
+          extReportTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ReportTypeConsumer).get(0).getId();
+          if(!extReportType.toString().contains(userConsumer.toString()))
+          {
+            newReportType = extReportType + ", " + userConsumer;
+            attributeComponent.changeStringAttributeLongExpression(extReportTypeId,newReportType);
+          }
+        }else
+        //if there is no attribute currently existing
+       {
+        newReportType = userConsumer;
+        attributeComponent.addStringAttribute(item.id,UUID_Attr_ReportTypeConsumer,newReportType.toString());
+      } 
+      }
+
+      //Usage Type Model
+      if(dqmrUsageType.equals("Statistical Model"))
+      {
+        //get Model Type Consumers attribute if it exists
+        if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).isEmpty()){
+        extModelType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).get(0).getStringValue();
+        extModelTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_ModelTypeConsumer).get(0).getId();
+        
+          if(!extModelType.toString().contains(userConsumer.toString()))
+          {
+            newModelType = extModelType + ", " + userConsumer;
+            attributeComponent.changeStringAttributeLongExpression(extModelTypeId,newModelType);
+          }
+        }
+        else
+        //if there is no attribute currently existing
+        {
+        newModelType = userConsumer;
+        attributeComponent.addStringAttribute(item.id,UUID_Attr_ModelTypeConsumer,newModelType.toString());
+        } 
+      }
+
+      //Usage type Critical Business Process
+      if(dqmrUsageType.equals("Critical Business Process"))
+      {
+        //get Process Type Consumers attribute if it exists
+        if  (!attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).isEmpty()){
+        extProcessType = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).get(0).getStringValue();
+        extProcessTypeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_CriticalBPConsumers).get(0).getId();
+            if(!extProcessType.toString().contains(userConsumer.toString()))
+            {
+            newProcessType = extProcessType + ", " + userConsumer;
+            attributeComponent.changeStringAttributeLongExpression(extProcessTypeId,newProcessType);
+            }
+        }
+        else
+        //if there is no attribute currently existing
+        {
+        newProcessType = userConsumer;
+        attributeComponent.addStringAttribute(item.id,UUID_Attr_CriticalBPConsumers,newProcessType.toString());
+        } 
+      }        
+
+
+    }
+  }
+}</script>
+    </scriptTask>
+    <sequenceFlow id="flow9" sourceRef="usertask3" targetRef="scripttask4"></sequenceFlow>
+    <sequenceFlow id="flow10" sourceRef="scripttask4" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="exclusivegateway1" targetRef="usertask3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${regType=="approved"}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+      <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
+        <omgdc:Bounds height="270.0" width="781.0" x="30.0" y="31.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
+        <omgdc:Bounds height="270.0" width="761.0" x="50.0" y="31.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="730.0" y="149.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="77.0" width="105.0" x="140.0" y="139.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="80.0" y="160.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="270.0" y="157.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask2" id="BPMNShape_scripttask2">
+        <omgdc:Bounds height="69.0" width="105.0" x="336.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="460.0" y="197.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask3" id="BPMNShape_scripttask3">
+        <omgdc:Bounds height="62.0" width="105.0" x="586.0" y="197.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask3" id="BPMNShape_usertask3">
+        <omgdc:Bounds height="55.0" width="105.0" x="390.0" y="74.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask4" id="BPMNShape_scripttask4">
+        <omgdc:Bounds height="58.0" width="105.0" x="530.0" y="73.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="115.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="140.0" y="177.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="245.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="270.0" y="177.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="290.0" y="197.0"></omgdi:waypoint>
+        <omgdi:waypoint x="289.0" y="221.0"></omgdi:waypoint>
+        <omgdi:waypoint x="336.0" y="224.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="441.0" y="224.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="224.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="565.0" y="224.0"></omgdi:waypoint>
+        <omgdi:waypoint x="586.0" y="228.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
+        <omgdi:waypoint x="691.0" y="228.0"></omgdi:waypoint>
+        <omgdi:waypoint x="747.0" y="231.0"></omgdi:waypoint>
+        <omgdi:waypoint x="747.0" y="184.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="495.0" y="101.0"></omgdi:waypoint>
+        <omgdi:waypoint x="530.0" y="102.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="635.0" y="102.0"></omgdi:waypoint>
+        <omgdi:waypoint x="747.0" y="102.0"></omgdi:waypoint>
+        <omgdi:waypoint x="747.0" y="149.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
+        <omgdi:waypoint x="290.0" y="157.0"></omgdi:waypoint>
+        <omgdi:waypoint x="290.0" y="101.0"></omgdi:waypoint>
+        <omgdi:waypoint x="390.0" y="101.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,1291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <collaboration id="Collaboration">
+    <participant id="pool1" name="Create Assertion Approval" processRef="createAssertionApproval"></participant>
+  </collaboration>
+  <process id="createAssertionApproval" name="Create Assertion Approval" isExecutable="true">
+    <documentation>This workflow performs the approval of the Assertion.</documentation>
+    <laneSet id="laneSet_createAssertionApproval">
+      <lane id="lane1" name="Collibra">
+        <flowNodeRef>servicetask1</flowNodeRef>
+        <flowNodeRef>servicetask2</flowNodeRef>
+        <flowNodeRef>servicetask3</flowNodeRef>
+        <flowNodeRef>servicetask4</flowNodeRef>
+        <flowNodeRef>scripttask1</flowNodeRef>
+        <flowNodeRef>servicetask12</flowNodeRef>
+        <flowNodeRef>servicetask13</flowNodeRef>
+        <flowNodeRef>servicetask14</flowNodeRef>
+        <flowNodeRef>endevent2</flowNodeRef>
+        <flowNodeRef>scripttask9</flowNodeRef>
+      </lane>
+      <lane id="lane2" name="AE-Producer">
+        <flowNodeRef>endevent1</flowNodeRef>
+        <flowNodeRef>servicetask6</flowNodeRef>
+        <flowNodeRef>usertask1</flowNodeRef>
+        <flowNodeRef>exclusivegateway1</flowNodeRef>
+        <flowNodeRef>callactivity1</flowNodeRef>
+        <flowNodeRef>exclusivegateway3</flowNodeRef>
+      </lane>
+      <lane id="lane3" name="PDS / MDS / MDS Delegate">
+        <flowNodeRef>startevent1</flowNodeRef>
+        <flowNodeRef>determineApprovedDUAs</flowNodeRef>
+        <flowNodeRef>pickApprovedDUA</flowNodeRef>
+        <flowNodeRef>addDUA</flowNodeRef>
+        <flowNodeRef>confirmDataLoaded</flowNodeRef>
+        <flowNodeRef>runDQChecks</flowNodeRef>
+        <flowNodeRef>createDQReport</flowNodeRef>
+        <flowNodeRef>reviewDQReport</flowNodeRef>
+        <flowNodeRef>completeAsSummary</flowNodeRef>
+        <flowNodeRef>servicetask5</flowNodeRef>
+        <flowNodeRef>scripttask2</flowNodeRef>
+        <flowNodeRef>scripttask3</flowNodeRef>
+        <flowNodeRef>scripttask4</flowNodeRef>
+        <flowNodeRef>scripttask5</flowNodeRef>
+        <flowNodeRef>scripttask6</flowNodeRef>
+        <flowNodeRef>exclusivegateway5</flowNodeRef>
+        <flowNodeRef>exclusivegateway6</flowNodeRef>
+        <flowNodeRef>exclusivegateway7</flowNodeRef>
+        <flowNodeRef>exclusivegateway8</flowNodeRef>
+      </lane>
+      <lane id="lane4" name="Producer DDRO">
+        <flowNodeRef>callactivity2</flowNodeRef>
+        <flowNodeRef>exclusivegateway2</flowNodeRef>
+        <flowNodeRef>servicetask7</flowNodeRef>
+        <flowNodeRef>scripttask10</flowNodeRef>
+      </lane>
+      <lane id="lane5" name="AE-Consumer">
+        <flowNodeRef>usertask2</flowNodeRef>
+        <flowNodeRef>servicetask8</flowNodeRef>
+        <flowNodeRef>exclusivegateway4</flowNodeRef>
+        <flowNodeRef>servicetask9</flowNodeRef>
+        <flowNodeRef>servicetask10</flowNodeRef>
+        <flowNodeRef>servicetask11</flowNodeRef>
+        <flowNodeRef>scripttask7</flowNodeRef>
+        <flowNodeRef>scripttask8</flowNodeRef>
+      </lane>
+      <lane id="lane6" name="Producer MDS">
+        <flowNodeRef>callactivity3</flowNodeRef>
+        <flowNodeRef>exclusivegateway9</flowNodeRef>
+      </lane>
+    </laneSet>
+    <startEvent id="startevent1" name="Start">
+      <extensionElements>
+        <activiti:formProperty id="duaVocabularyID" name="UUID of the 'data usage agreement' domain" type="string" default="72412ed6-49ea-45fa-a164-77f4f206dc1f" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_status_Approved" name="UUID of the status 'Approved'" type="string" default="7a46a7c0-9d0c-4943-9bac-8cf56b89b053" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_DUA" name="UUID of the relationship between Assertiona and DUA" type="string" default="22f7b4b3-74b1-4370-9c21-155224270298" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_ConsumerLOB" name="UUID of the relationship between DUA and the Consumer LOB" type="string" default="39cfc875-8127-4807-8312-4c5af8edc430" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_DDRO" name="UUID of the role DDRO" type="string" default="f37f8670-19e6-4e2c-8e1e-36ebc5359a64" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_MDS" name="UUID of the MDS role" type="string" default="c70d49a5-2797-4e4e-a77b-30029e444184" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_AEConsumer" name="UUID of the AE Consumer role" type="string" default="6eb605ac-f738-4122-8754-233d9c1e9a20" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_AEProducer" name="UUID of the AE Producer Role" type="string" default="5d32fa71-8f2a-4cf5-a6ac-938d2529ad93" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_MDSDelegate" name="UUID of the role MDS Delegate" type="string" default="4c7d1caf-2672-4cfc-b18e-755b2b8bbe94" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_InProgress" name="UUID of the &quot;In Progress&quot; Status" type="string" default="00000000-0000-0000-0000-000000005019" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_VerifyDataLoaded" name="UUID of the Attribute &quot;Verify Data Was Loaded&quot;" type="string" default="93975e47-84a1-42d5-b2f9-b3a2225a05a6" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_EvidenceDataRefeshed" name="UUID of the Attribute &quot;Evidence Data is Refreshed&quot;" type="string" default="dceabed5-0119-4427-81e6-477e38103dff" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_dqMonitoringChecks" name="UUID of the attribute &quot;Were DQ monitoring checks executed?&quot;" type="string" default="0e462651-4614-4dc3-bf77-5ba45f6dfae1" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_dqReportCreated" name="UUID of the Attribute &quot;Was the DQ Report created?&quot;" type="string" default="538773a8-f5a8-4dd5-8f33-75831241112f" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_reviewDQReport" name="UUID of the Attribute &quot;Was the DQ Report reviewed?&quot;" type="string" default="b00387f8-70cf-4384-83d0-9cef1f11976f" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_asSummaryCreated" name="UUID of the Attribute &quot;Was the Assertion Summary completed?&quot;" type="string" default="21cb0d61-8d8d-4586-a005-5e6bcf9b6626" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_locAsSummary" name="UUID of the Attribute &quot;Location of the Assertion Summary and supporting documents&quot;" type="string" default="9b8469cc-9748-4d18-bbaa-b2585d57124a" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_UnderProducerReview" name="UUID of the status &quot;Under Producer Review&quot;" type="string" default="7868232e-6af6-4e4a-b6b9-4e9ee0bdd223" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_ProducerLOB" name="UUID of the relationship between DUA and the Producer LOB" type="string" default="b0e81310-9d0c-4381-b644-7ad5cf077589" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_AsToConLOB" name="UUID of the relationship between the Consumer LOB and Assertion" type="string" default="8e0bcc45-c500-445f-a91f-0d1dcee3229d" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_AsToProdLOB" name="UUID of the relationship between Producer LOB and Assertion" type="string" default="10cc25ca-b1f1-42fe-98b6-1e1448c0ed59" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="voteCompletionPercentage" name="Percentage required to vote before completion" type="long" default="100" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="voteWarningTimeDuration" name="Duration before a warning is send to vote" type="string" default="B5D" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="voteTimeoutDuration" name="Timeout before voting process is forced to continue" type="string" default="P4Y" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="sendVotingActionEmails" name="Send an action email to users that are required to vote in the process" type="boolean" default="false" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="consumerUserExpression" name="The role of the consumer in the AE-Consumer swim lane" type="string" default="role(AE-Consumer)" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_UnderConsumerReview" name="UUID of the status &quot;Under Consumer Review&quot;" type="string" default="964e9e95-ff02-4978-9a72-c5d0191b2cdc" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_ProducerRejected" name="UUID of the status &quot;Producer Rejected&quot;" type="string" default="6d50812a-a275-482a-97d7-357dda913fb6" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_Approved" name="UUID of the status &quot;Approved&quot;" type="string" default="7a46a7c0-9d0c-4943-9bac-8cf56b89b053" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_ConRejectSummary" name="UUID of the status &quot;Consumer Rejected - Summary&quot;" type="string" default="59217716-2358-4cc0-8d38-384141944358" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Status_ConRejectDQCheck" name="UUID of the status &quot;Consumer Rejected - DQ Checks&quot;" type="string" default="9ccc5094-febf-4159-9a58-c964701a9ff9" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_AsConfirmDate" name="UUID of the attribute Assertion Approval Date" type="string" default="4c547db5-7168-491e-b549-dc088c954a87" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Group_MDSDel" name="UUID of the group MDS Delegate" type="string" default="d52977bf-8ca9-4ae3-a7a5-34f03878aff0" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Group_PDS" name="UUID of the Group PDS" type="string" default="b059c1d0-32aa-4032-8fa6-39e0380786c6" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_PDS" name="UUID of the Role PDS" type="string" default="c9ceff9e-5595-4579-9e03-9be0cb5f9db7" readable="false"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="flow4" sourceRef="startevent1" targetRef="determineApprovedDUAs"></sequenceFlow>
+    <scriptTask id="determineApprovedDUAs" name="Determine Approved DUAs" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>if(debug){
+  loggerComponent.info("[[ LOGGING ]] - ********inside dertermine approved DUA workflow******")
+  loggerComponent.info("[[ LOGGING ]] - ********debug equal to ****** " + debug)
+
+  loggerComponent.info("[[ LOGGING ]] - ********duaVocabularyID equal to ****** " + duaVocabularyID)
+  loggerComponent.info("[[ LOGGING ]] - ********UUID_status_Approved equal to ****** " + UUID_status_Approved)
+}
+
+
+arrayOfApprovedDUAs = []
+counter = 0
+
+vocabularyComponent.getTerms(duaVocabularyID,0,0).each{ dua -&gt;
+
+  duaId = dua.getId()
+  currentUser = userComponent.getUserByName(requester).getId()
+
+
+  if(dua.getStatus().getId() == UUID_status_Approved){
+    
+    if(debug){
+      loggerComponent.info("[[ LOGGING ]] - ********DUA FOUND ****** " + dua.getId())
+    }
+
+    loggerComponent.info("[[ LOGGING ]] - INSIDE MDS USERS FOR PRODUCER LOB currentUser: " + currentUser)
+    loggerComponent.info("[[ LOGGING ]] - INSIDE MDS USERS FOR PRODUCER LOB duaId: " + duaId)
+    relationComponent.findRelationsBySourceAndType(UUID_RelType_ProducerLOB, duaId, 0,0).each { lob -&gt;
+      lobId = lob.getTarget().getId()
+      loggerComponent.info("[[ LOGGING ]] - INSIDE MDS USERS FOR PRODUCER LOB lobId: " + lobId)
+      rightsComponent.getMembersByResourceAndRole(lobId, UUID_Role_MDS).each { mem -&gt;
+        user = mem.getUser().getId()
+        loggerComponent.info("[[ LOGGING ]] - INSIDE MDS USERS FOR PRODUCER LOB user: " + user)
+        if(user == currentUser){
+          arrayOfApprovedDUAs.add(dua.getId())
+          counter = counter + 1
+          loggerComponent.info("[[ LOGGING ]] - ADDING DUA BASED ON MDS: " + user)
+        }
+      }
+      rightsComponent.getMembersByResourceAndRole(lobId, UUID_Role_MDSDelegate).each { mem -&gt;
+        user = mem.getUser().getId()
+        loggerComponent.info("[[ LOGGING ]] - INSIDE MDS DELEGATE USERS FOR PRODUCER LOB user: " + user)
+        if(user == currentUser){
+          arrayOfApprovedDUAs.add(dua.getId())
+          counter = counter + 1
+          loggerComponent.info("[[ LOGGING ]] - ADDING DUA BASED ON MDS DELEGATE: " + user)
+        }
+      }
+    }
+
+    
+  }
+ 
+}
+
+arrayOfApprovedDUAs.unique()
+stringOfApprovedDUAs = arrayOfApprovedDUAs.join(',')
+loggerComponent.info("[[ LOGGING ]] - TOTAL COUNT OF DUAS counter: " + counter)
+
+if(debug){
+  loggerComponent.info("[[ LOGGING ]] - ********stringOfApprovedDUAs equal to ****** " + stringOfApprovedDUAs)
+}
+
+execution.setVariable('stringOfApprovedDUAs', stringOfApprovedDUAs)</script>
+    </scriptTask>
+    <sequenceFlow id="flow1" sourceRef="determineApprovedDUAs" targetRef="pickApprovedDUA"></sequenceFlow>
+    <userTask id="pickApprovedDUA" name="Pick Approved DUA" activiti:candidateUsers="user(${requester})">
+      <documentation>Select DUA related to the Assertion you are performing</documentation>
+      <extensionElements>
+        <activiti:formProperty id="duaPicked" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Select DUA related to the Assertion you are performing&lt;/b&gt;" type="term" required="true">
+          <activiti:value id="multiValued" name="false"></activiti:value>
+          <activiti:value id="proposedFixed" name="true"></activiti:value>
+          <activiti:value id="proposedValues" name="${stringOfApprovedDUAs}"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow2" sourceRef="pickApprovedDUA" targetRef="addDUA"></sequenceFlow>
+    <scriptTask id="addDUA" name="Add DUA " scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - Inside create assertion approval after DUA is picked " + duaPicked)
+
+relationComponent.addRelation(duaPicked,UUID_RelType_DUA,item.id,null,null);
+
+duaName = termComponent.getTerm(duaPicked).getSignifier()
+
+loggerComponent.info("[[ LOGGING ]] - The name of the DUA is : duaName : " + duaName)
+
+currentUser = userComponent.getUserByName(requester).getId()
+
+userComponent.getGroups().each { group -&gt;
+    groupName = group.getGroupName()
+    groupId = group.getId()
+    if( groupId == UUID_Group_MDSDel || groupId ==  UUID_Group_PDS){
+      group.getUsers().each { user -&gt;
+        userId = user.getId()
+        loggerComponent.info("[[ LOGGING ]] - getting user name. inside users for MDS Delegate and PDS groups | user: " + user.getId())
+        if (currentUser == userId){
+          if(groupId == UUID_Group_MDSDel){
+            loggerComponent.info("[[ LOGGING ]] - adding user as MDS Delegate.  userId : " + userId)
+            rightsComponent.addMember(currentUser, UUID_Role_MDSDelegate, item.id)
+          }
+          if(groupId == UUID_Group_PDS){
+            loggerComponent.info("[[ LOGGING ]] - adding user as MDS Delegate.  userId : " + userId)
+            rightsComponent.addMember(currentUser, UUID_Role_PDS, item.id)
+          }
+        }
+      }
+    }
+    loggerComponent.info("[[ LOGGING ]] - getting group name.  groupName: " + groupName)
+}
+
+execution.setVariable('duaName', duaName)</script>
+    </scriptTask>
+    <sequenceFlow id="flow3" sourceRef="addDUA" targetRef="scripttask1"></sequenceFlow>
+    <serviceTask id="servicetask1" name="Notify Consumer LOB MDS" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[initiated-Consumer-LOB-MDS]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${consumerLOBMDS}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask2" name="Notify AE Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[initiated-AEProducer]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${duaAEProducer}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask3" name="Notify Consumer DDRO " activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[initiated-Consumer-LOB-DDRO]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${consumerLOBDDRO}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask4" name="Notify AE Consumer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[initiated-AEConsumer]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${duaAEConsumer}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow5" sourceRef="servicetask1" targetRef="servicetask2"></sequenceFlow>
+    <sequenceFlow id="flow6" sourceRef="servicetask2" targetRef="servicetask3"></sequenceFlow>
+    <sequenceFlow id="flow7" sourceRef="servicetask3" targetRef="servicetask4"></sequenceFlow>
+    <scriptTask id="scripttask1" name="Determine Notifications" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>def consumerLOBMDS = ""
+def arrayMDS = []
+def consumerLOBDDRO = ""
+def arrayDDRO = []
+def producerLOBDDRO = ""
+def producerLOBMDS = ""
+def duaAEProducer = ""
+def arrayAEProducer = []
+def duaAEConsumer = ""
+def arrayAEConsumer = []
+def consumerProducerDDRO = ""
+def consumerProducerMDS = ""
+
+//get the "Consumer DDRO Notified" LOB from the DUA
+relationComponent.findRelationsBySourceAndType(UUID_RelType_ConsumerLOB, duaPicked, 0,0).each { lob -&gt;
+  //add "Consumer DDRO Notified" LOB as a relation to Assertion
+  relationComponent.addRelation(lob.target.id,UUID_RelType_AsToConLOB,item.id,null,null)
+  //get the DDRO users from the LOB
+   rightsComponent.getMembersByResourceAndRole(lob.target.id, UUID_Role_DDRO).each { mem -&gt;
+      //add consumerLOB DDRO to array to set as responsibility on assertion
+      arrayDDRO.add(mem.ownerId)
+      if (consumerLOBDDRO != "") {
+        consumerLOBDDRO = consumerLOBDDRO + ",user(" + mem.user.getUserName() + ")"  
+      } else {
+        consumerLOBDDRO = "user(" + mem.user.getUserName() + ")" 
+      }
+      loggerComponent.info ("[[ LOGGING ]] USER NAME OF DDRO IS " + consumerLOBDDRO)
+
+      if (consumerProducerDDRO != "") {
+        consumerProducerDDRO = consumerProducerDDRO + ",user(" + mem.user.getUserName() + ")"  
+      } else {
+        consumerProducerDDRO = "user(" + mem.user.getUserName() + ")" 
+      }
+      loggerComponent.info ("[[ LOGGING ]] USER NAME OF DDRO IS " + consumerProducerDDRO)
+   }
+
+   //get the MDS users from the LOB
+  rightsComponent.getMembersByResourceAndRole(lob.target.id, UUID_Role_MDS).each { mem -&gt;
+      //add consumerLOB MDS to array to set as responsibility on assertion
+      arrayMDS.add(mem.ownerId)
+      if (consumerLOBMDS != "") {
+          consumerLOBMDS = consumerLOBMDS + ",user(" + mem.user.getUserName() + ")"  
+        } else {
+          consumerLOBMDS = "user(" + mem.user.getUserName() + ")" 
+        }
+
+      if (consumerProducerMDS != "") {
+          consumerProducerMDS = consumerProducerMDS + ",user(" + mem.user.getUserName() + ")"  
+        } else {
+          consumerProducerMDS = "user(" + mem.user.getUserName() + ")" 
+        }
+      
+        loggerComponent.info ("[[ LOGGING ]] USER NAME OF MDS IS " + consumerProducerMDS)
+   }
+}
+
+//get the "Producer DDRO Notified" LOB from the DUA to set DDRO and MDS responsibilities
+relationComponent.findRelationsBySourceAndType(UUID_RelType_ProducerLOB, duaPicked, 0,0).each { lob -&gt;
+  relationComponent.addRelation(lob.target.id,UUID_RelType_AsToProdLOB,item.id,null,null)
+  rightsComponent.getMembersByResourceAndRole(lob.target.id, UUID_Role_DDRO).each { mem -&gt;
+    arrayDDRO.add(mem.ownerId)
+    if (producerLOBDDRO != "") {
+        producerLOBDDRO = producerLOBDDRO + ",user(" + mem.user.getUserName() + ")"  
+      } else {
+        producerLOBDDRO = "user(" + mem.user.getUserName() + ")" 
+      }
+    loggerComponent.info ("[[ LOGGING ]] USER NAME OF DDRO IS " + producerLOBDDRO)
+
+    if (consumerProducerDDRO != "") {
+        consumerProducerDDRO = consumerProducerDDRO + ",user(" + mem.user.getUserName() + ")"  
+      } else {
+        consumerProducerDDRO = "user(" + mem.user.getUserName() + ")" 
+      }
+      loggerComponent.info ("[[ LOGGING ]] USER NAME OF DDRO IS " + consumerProducerDDRO)
+    }
+  rightsComponent.getMembersByResourceAndRole(lob.target.id, UUID_Role_MDS).each { mem -&gt;
+    arrayMDS.add(mem.ownerId)
+    if (consumerProducerMDS != "") {
+          consumerProducerMDS = consumerProducerMDS + ",user(" + mem.user.getUserName() + ")"  
+        } else {
+          consumerProducerMDS = "user(" + mem.user.getUserName() + ")" 
+        }
+    if (producerLOBMDS != "") {
+        producerLOBMDS = producerLOBMDS + ",user(" + mem.user.getUserName() + ")"  
+      } else {
+        producerLOBMDS = "user(" + mem.user.getUserName() + ")" 
+    }
+    loggerComponent.info ("[[ LOGGING ]] USER NAME OF MDS IS " + consumerProducerMDS)
+  }
+}
+
+//set MDS responsibility from Consumer and Producer LOB
+arrayMDS.unique().each { mds -&gt;
+  rightsComponent.addMember(mds, UUID_Role_MDS, item.id)
+}
+
+//set DDRO responsibility from Consumer and Producer LOB
+arrayDDRO.unique().each { ddro -&gt;
+  rightsComponent.addMember(ddro, UUID_Role_DDRO, item.id)
+}
+
+
+//get the AE-Producer from the DUA
+rightsComponent.getMembersByResourceAndRole(duaPicked, UUID_Role_AEProducer).each { mem -&gt;
+  arrayAEProducer.add(mem.ownerId)
+    if (duaAEProducer != "") {
+      duaAEProducer = duaAEProducer + ",user(" + mem.user.getUserName() + ")"  
+    } else {
+    duaAEProducer = "user(" + mem.user.getUserName() + ")" 
+    }
+          
+    loggerComponent.info ("[[ LOGGING ]] USER NAME OF AEProducer IS " + duaAEProducer)
+} 
+
+//get the AE-Consumer from the DUA
+rightsComponent.getMembersByResourceAndRole(duaPicked, UUID_Role_AEConsumer).each { mem -&gt;
+    arrayAEConsumer.add(mem.ownerId)
+    if (duaAEConsumer != "") {
+      duaAEConsumer = duaAEConsumer + ",user(" + mem.user.getUserName() + ")"  
+    } else {
+    duaAEConsumer = "user(" + mem.user.getUserName() + ")" 
+    }
+          
+    loggerComponent.info ("[[ LOGGING ]] USER NAME OF AEConsumer IS " + duaAEConsumer)
+} 
+
+//set AE Producer responsibility from DUA
+arrayAEProducer.unique().each { producer -&gt;
+  rightsComponent.addMember(producer, UUID_Role_AEProducer, item.id)
+}
+
+//set AE Consumer responsibility from DUA
+arrayAEConsumer.unique().each { consumer -&gt;
+  rightsComponent.addMember(consumer, UUID_Role_AEConsumer, item.id)
+}
+
+execution.setVariable('duaAEConsumer', duaAEConsumer)
+execution.setVariable('duaAEProducer', duaAEProducer)
+execution.setVariable('consumerLOBMDS', consumerLOBMDS)
+execution.setVariable('consumerLOBDDRO', consumerLOBDDRO)
+execution.setVariable('producerLOBDDRO', producerLOBDDRO)
+execution.setVariable('producerLOBMDS', producerLOBMDS)
+execution.setVariable('consumerProducerDDRO', consumerProducerDDRO)
+execution.setVariable('consumerProducerMDS', consumerProducerMDS)
+
+</script>
+    </scriptTask>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <userTask id="confirmDataLoaded" name="Confirm Data Loaded" activiti:candidateUsers="user(${requester})">
+      <documentation>Confirm that data on which the Assertion is being performed has been loaded</documentation>
+      <extensionElements>
+        <activiti:formProperty id="verifyDataLoaded" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Has the data on which the Assertion is being performed been loaded?  Selecting “No” will not let you proceed to the next task.&lt;/b&gt;" type="boolean" required="true"></activiti:formProperty>
+        <activiti:formProperty id="evidenceDataRefreshed" name="Please provide an URL as evidence that data was loaded or refreshed." type="textarea"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="runDQChecks" name="Run DQ Checks" activiti:candidateUsers="user(${requester})">
+      <documentation>Run Data Quality Checks</documentation>
+      <extensionElements>
+        <activiti:formProperty id="dqMonitoringChecks" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Have the Data Quality Checks been run?  Selecting “No” will not let you proceed to the next task.&lt;/b&gt;" type="boolean" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="createDQReport" name="Create DQ Report" activiti:candidateUsers="user(${requester})">
+      <documentation>Create Data Quality Report</documentation>
+      <extensionElements>
+        <activiti:formProperty id="dqReportCreated" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Has the Data Quality Report been created?  Selecting “No” will not let you proceed to the next task&lt;/b&gt;" type="boolean" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="reviewDQReport" name="Review DQ Report" activiti:candidateUsers="user(${requester})">
+      <documentation>Conduct preliminary review of Data Quality Report with Consumer MDS (optional)</documentation>
+      <extensionElements>
+        <activiti:formProperty id="reviewDQReport" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Has a preliminary review of Data Quality Report been conducted with Consumer MDS (optional)?&lt;/b&gt;" type="boolean" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="completeAsSummary" name="Complete Assertion Summary" activiti:candidateUsers="user(${requester})">
+      <documentation>Complete Assertion Summary</documentation>
+      <extensionElements>
+        <activiti:formProperty id="asSummaryCreated" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Has the Assertion Summary been completed? Selecting “No” will not let you proceed to the next task&lt;/b&gt;" type="boolean" required="true"></activiti:formProperty>
+        <activiti:formProperty id="locAsSummary" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Location of the Assertion Summary and supporting documents&lt;/b&gt;" type="textarea" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow9" sourceRef="servicetask4" targetRef="confirmDataLoaded"></sequenceFlow>
+    <serviceTask id="servicetask5" name="Status change &quot;In Progress&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_InProgress}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow10" sourceRef="confirmDataLoaded" targetRef="exclusivegateway5"></sequenceFlow>
+    <sequenceFlow id="flow13" sourceRef="createDQReport" targetRef="exclusivegateway7"></sequenceFlow>
+    <scriptTask id="scripttask2" name="Update Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>attributeComponent.addBooleanAttribute(item.id,UUID_Attr_VerifyDataLoaded,verifyDataLoaded.toString());
+
+if (evidenceDataRefreshed.length().toString()!="0"){
+  attributeComponent.addStringAttribute(item.id,UUID_Attr_EvidenceDataRefeshed,evidenceDataRefreshed.toString());
+}</script>
+    </scriptTask>
+    <sequenceFlow id="flow15" sourceRef="servicetask5" targetRef="scripttask2"></sequenceFlow>
+    <scriptTask id="scripttask3" name="Update Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>	attributeComponent.addBooleanAttribute(item.id,UUID_Attr_dqMonitoringChecks,dqMonitoringChecks.toString());
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow17" sourceRef="runDQChecks" targetRef="exclusivegateway6"></sequenceFlow>
+    <sequenceFlow id="flow18" sourceRef="scripttask3" targetRef="createDQReport"></sequenceFlow>
+    <scriptTask id="scripttask4" name="Update Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>
+attributeComponent.addBooleanAttribute(item.id,UUID_Attr_dqReportCreated,dqReportCreated.toString());</script>
+    </scriptTask>
+    <sequenceFlow id="flow19" sourceRef="scripttask4" targetRef="reviewDQReport"></sequenceFlow>
+    <scriptTask id="scripttask5" name="Update Atrribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <documentation>reviewDQReport</documentation>
+      <script>
+
+attributeComponent.addBooleanAttribute(item.id,UUID_Attr_reviewDQReport,reviewDQReport.toString());</script>
+    </scriptTask>
+    <sequenceFlow id="flow20" sourceRef="reviewDQReport" targetRef="scripttask5"></sequenceFlow>
+    <sequenceFlow id="flow21" sourceRef="scripttask5" targetRef="completeAsSummary"></sequenceFlow>
+    <scriptTask id="scripttask6" name="Update Attributes" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>
+attributeComponent.addBooleanAttribute(item.id,UUID_Attr_asSummaryCreated,asSummaryCreated.toString());
+
+attributeComponent.addStringAttribute(item.id,UUID_Attr_locAsSummary,locAsSummary.toString());</script>
+    </scriptTask>
+    <sequenceFlow id="flow22" sourceRef="completeAsSummary" targetRef="exclusivegateway8"></sequenceFlow>
+    <serviceTask id="servicetask6" name="Status change &quot;Under Producer Review&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_UnderProducerReview}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow23" sourceRef="scripttask6" targetRef="servicetask6"></sequenceFlow>
+    <sequenceFlow id="flow24" sourceRef="scripttask1" targetRef="servicetask1"></sequenceFlow>
+    <userTask id="usertask1" name="Delegate Review?" activiti:candidateUsers="${duaAEProducer}">
+      <documentation>Select who you would like to review the Assertion Summary</documentation>
+      <extensionElements>
+        <activiti:formProperty id="ddroDelegation" name="Delegate to Producer DDRO" type="activityButton" default="false"></activiti:formProperty>
+        <activiti:formProperty id="mdsDelegation" name="Delegate to Producer MDS" type="activityButton" default="false"></activiti:formProperty>
+        <activiti:formProperty id="noDelegation" name="No Delegation" type="activityButton" default="false"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow25" sourceRef="servicetask6" targetRef="usertask1"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow26" sourceRef="usertask1" targetRef="exclusivegateway1"></sequenceFlow>
+    <callActivity id="callactivity1" name="AE-Producer Review" calledElement="votingSubProcess">
+      <extensionElements>
+        <activiti:in sourceExpression="${&quot;Please scroll down to the 'Location of Summary Assertion and Supporting Documents' section. Click the link to review the Assertion Summary. Once your review is complete, click the 'Approve/Reject' button with your decision.&quot;}" target="decisionInfo"></activiti:in>
+        <activiti:in source="duaAEProducer" target="voterUserExpression"></activiti:in>
+        <activiti:in source="voteCompletionPercentage" target="votePercentage"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="addComments"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="earlyComplete"></activiti:in>
+        <activiti:in source="voteWarningTimeDuration" target="voteWarningTimeDuration"></activiti:in>
+        <activiti:in source="voteTimeoutDuration" target="voteTimeoutDuration"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject&quot;}" target="voteButtonLabel"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject Assertion Summary&quot;}" target="voteTaskName"></activiti:in>
+        <activiti:in source="sendVotingActionEmails" target="sendActionEmails"></activiti:in>
+        <activiti:out source="votingResult" target="votingResult"></activiti:out>
+      </extensionElements>
+    </callActivity>
+    <sequenceFlow id="flow29" name="No Delegation" sourceRef="exclusivegateway1" targetRef="callactivity1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${noDelegation}]]></conditionExpression>
+    </sequenceFlow>
+    <callActivity id="callactivity2" name="Producer DDRO Review" calledElement="votingSubProcess">
+      <extensionElements>
+        <activiti:in sourceExpression="${&quot;Please scroll down to the 'Location of Summary Assertion and Supporting Documents' section. Click the link to review the Assertion Summary. Once your review is complete, click the 'Approve/Reject' button with your decision.&quot;}" target="decisionInfo"></activiti:in>
+        <activiti:in source="producerLOBDDRO" target="voterUserExpression"></activiti:in>
+        <activiti:in source="voteCompletionPercentage" target="votePercentage"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="addComments"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="earlyComplete"></activiti:in>
+        <activiti:in source="voteWarningTimeDuration" target="voteWarningTimeDuration"></activiti:in>
+        <activiti:in source="voteTimeoutDuration" target="voteTimeoutDuration"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject&quot;}" target="voteButtonLabel"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject Assertion Summary&quot;}" target="voteTaskName"></activiti:in>
+        <activiti:in source="sendVotingActionEmails" target="sendActionEmails"></activiti:in>
+        <activiti:out source="votingResult" target="votingResult"></activiti:out>
+      </extensionElements>
+    </callActivity>
+    <sequenceFlow id="flow30" name="Producer DDRO" sourceRef="exclusivegateway1" targetRef="callactivity2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ddroDelegation}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow31" sourceRef="callactivity2" targetRef="exclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="flow32" name="Rejected" sourceRef="exclusivegateway2" targetRef="scripttask10">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway3" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow33" sourceRef="callactivity1" targetRef="exclusivegateway3"></sequenceFlow>
+    <sequenceFlow id="flow34" name="Rejected" sourceRef="exclusivegateway3" targetRef="scripttask10">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="servicetask7" name="Status change &quot;Producer Rejected&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_ProducerRejected}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow37" sourceRef="servicetask7" targetRef="completeAsSummary"></sequenceFlow>
+    <userTask id="usertask2" name="AE-Consumer Review" activiti:candidateUsers="${consumerUserExpression}">
+      <documentation>Please scroll down to the “Location of Summary Assertion and Supporting Documents” section. Click the link to review the Assertion Summary. Once your review is complete, click the “View Task” button with your decision.</documentation>
+      <extensionElements>
+        <activiti:formProperty id="endDate" name="Please enter the approval date." type="datetime" datePattern="MM-dd-YYYY" required="true">
+          <activiti:value id="dateTimeType" name="date"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="approved" name="Approve" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="rejectChangeSummary" name="Reject/Change Summary" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="rejectRunDQChecks" name="Rejected - Run DQ Checks" type="button" default="false"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="servicetask8" name="Status change &quot;Consumer Review&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_UnderConsumerReview}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow38" sourceRef="servicetask8" targetRef="usertask2"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway4" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow39" sourceRef="usertask2" targetRef="exclusivegateway4"></sequenceFlow>
+    <serviceTask id="servicetask9" name="Status change &quot;Consumer Rejected - Summary&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_ConRejectSummary}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask10" name="Status change &quot;Consumer Rejected - DQ Checks&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_ConRejectDQCheck}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask11" name="Status change &quot;Approved&quot;" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.ChangeStatusDelegate">
+      <extensionElements>
+        <activiti:field name="targetStatusId">
+          <activiti:expression><![CDATA[${UUID_Status_Approved}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow40" sourceRef="exclusivegateway4" targetRef="servicetask11">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow41" sourceRef="exclusivegateway4" targetRef="servicetask9">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${rejectChangeSummary}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow42" sourceRef="exclusivegateway4" targetRef="servicetask10">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${rejectRunDQChecks}]]></conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="servicetask12" name="Notify Consumer/Producer MDS" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[completed-MDS]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${consumerProducerMDS}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask13" name="Notify AE-Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[completed-Producer]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${duaAEProducer}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="servicetask14" name="Notify Consumer/Producer DDRO" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[completed-DDRO]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${consumerProducerDDRO}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow43" sourceRef="scripttask2" targetRef="runDQChecks"></sequenceFlow>
+    <sequenceFlow id="flow44" sourceRef="servicetask9" targetRef="scripttask7"></sequenceFlow>
+    <sequenceFlow id="flow45" sourceRef="servicetask11" targetRef="scripttask9"></sequenceFlow>
+    <sequenceFlow id="flow48" sourceRef="servicetask12" targetRef="servicetask13"></sequenceFlow>
+    <sequenceFlow id="flow49" sourceRef="servicetask13" targetRef="servicetask14"></sequenceFlow>
+    <endEvent id="endevent2" name="End"></endEvent>
+    <sequenceFlow id="flow50" sourceRef="servicetask14" targetRef="endevent2"></sequenceFlow>
+    <sequenceFlow id="flow51" name="Approved" sourceRef="exclusivegateway2" targetRef="servicetask8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow52" name="Approved" sourceRef="exclusivegateway3" targetRef="servicetask8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <scriptTask id="scripttask7" name="Remove Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>asSummaryCreatedId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_asSummaryCreated).get(0).getId()
+attributeComponent.removeAttribute(asSummaryCreatedId)</script>
+    </scriptTask>
+    <scriptTask id="scripttask8" name="Remove Attributes" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>dqCheckAttributeId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_dqMonitoringChecks).get(0).getId()
+attributeComponent.removeAttribute(dqCheckAttributeId)
+
+dqReportCreatedId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_dqReportCreated).get(0).getId()
+attributeComponent.removeAttribute(dqReportCreatedId)
+
+reviewDQReportId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_reviewDQReport).get(0).getId()
+attributeComponent.removeAttribute(reviewDQReportId)
+
+asSummaryCreatedId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_asSummaryCreated).get(0).getId()
+attributeComponent.removeAttribute(asSummaryCreatedId)
+
+locAsSummaryId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_locAsSummary).get(0).getId()
+attributeComponent.removeAttribute(locAsSummaryId)
+
+
+
+
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow53" sourceRef="servicetask10" targetRef="scripttask8"></sequenceFlow>
+    <sequenceFlow id="flow54" sourceRef="scripttask8" targetRef="runDQChecks"></sequenceFlow>
+    <sequenceFlow id="flow55" sourceRef="scripttask7" targetRef="completeAsSummary"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway5" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow56" sourceRef="exclusivegateway5" targetRef="servicetask5">
+      <documentation>{verifyDataLoaded}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${verifyDataLoaded}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow57" sourceRef="exclusivegateway5" targetRef="confirmDataLoaded">
+      <documentation>{!verifyDataLoaded}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!verifyDataLoaded}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway6" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow58" sourceRef="exclusivegateway6" targetRef="scripttask3">
+      <documentation>${dqMonitoringChecks}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dqMonitoringChecks}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow59" sourceRef="exclusivegateway6" targetRef="runDQChecks">
+      <documentation>${!dqMonitoringChecks}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!dqMonitoringChecks}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway7" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow60" sourceRef="exclusivegateway7" targetRef="createDQReport">
+      <documentation>${!dqReportCreated}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!dqReportCreated}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow61" sourceRef="exclusivegateway7" targetRef="scripttask4">
+      <documentation>${dqReportCreated}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dqReportCreated}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway8" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow62" sourceRef="exclusivegateway8" targetRef="completeAsSummary">
+      <documentation>${!asSummaryCreated}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!asSummaryCreated}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow63" sourceRef="exclusivegateway8" targetRef="scripttask6">
+      <documentation>${asSummaryCreated}</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${asSummaryCreated}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow64" name="Producer MDS" sourceRef="exclusivegateway1" targetRef="callactivity3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${mdsDelegation}]]></conditionExpression>
+    </sequenceFlow>
+    <callActivity id="callactivity3" name="Producer MDS Review" calledElement="votingSubProcess">
+      <extensionElements>
+        <activiti:in sourceExpression="${&quot;Please scroll down to the 'Location of Summary Assertion and Supporting Documents' section. Click the link to review the Assertion Summary. Once your review is complete, click the 'Approve/Reject' button with your decision.&quot;}" target="decisionInfo"></activiti:in>
+        <activiti:in source="producerLOBMDS" target="voterUserExpression"></activiti:in>
+        <activiti:in source="voteCompletionPercentage" target="votePercentage"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="addComments"></activiti:in>
+        <activiti:in sourceExpression="${true}" target="earlyComplete"></activiti:in>
+        <activiti:in source="voteWarningTimeDuration" target="voteWarningTimeDuration"></activiti:in>
+        <activiti:in source="voteTimeoutDuration" target="voteTimeoutDuration"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject&quot;}" target="voteButtonLabel"></activiti:in>
+        <activiti:in sourceExpression="${&quot;Approve/Reject Assertion Summary&quot;}" target="voteTaskName"></activiti:in>
+        <activiti:in source="sendVotingActionEmails" target="sendActionEmails"></activiti:in>
+        <activiti:out source="votingResult" target="votingResult"></activiti:out>
+      </extensionElements>
+    </callActivity>
+    <exclusiveGateway id="exclusivegateway9" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow65" sourceRef="callactivity3" targetRef="exclusivegateway9"></sequenceFlow>
+    <sequenceFlow id="flow66" name="Approved" sourceRef="exclusivegateway9" targetRef="servicetask8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow67" name="Rejected" sourceRef="exclusivegateway9" targetRef="scripttask10">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!votingResult.votingResult}]]></conditionExpression>
+    </sequenceFlow>
+    <scriptTask id="scripttask9" name="Set Approval Date" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - INSIDE ADD ATTRIBUTES *****")
+
+loggerComponent.info("START - Add Attributes")
+
+/*
+ 
+TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+ 
+Calendar cal = Calendar.getInstance()
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+ 
+////****Used to test what date is being returned after Calendar operations
+startDateMidnightUTC = cal.getTime()
+loggerComponent.info("[LOGGING]startDateMidnightUTC&gt;&gt;&gt; "+startDateMidnightUTC)
+ 
+startDate = cal.getTime().getTime()
+loggerComponent.info("[LOGGING]startDate&gt;&gt;&gt; "+startDate)
+attributeComponent.addDateAttribute(item.id,UUID_Attr_AsConfirmDate,startDate.toString())
+*/
+ 
+attributeComponent.addDateAttribute(item.id,UUID_Attr_AsConfirmDate,endDate.getTime().toString())
+
+loggerComponent.info("END - Add Attributes")</script>
+    </scriptTask>
+    <sequenceFlow id="flow68" sourceRef="scripttask9" targetRef="servicetask12"></sequenceFlow>
+    <scriptTask id="scripttask10" name="Remove Attribute" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>asSummaryCreatedId = attributeComponent.getAttributesOfTypeForRepresentation(item.id,UUID_Attr_asSummaryCreated).get(0).getId()
+attributeComponent.removeAttribute(asSummaryCreatedId)</script>
+    </scriptTask>
+    <sequenceFlow id="flow69" sourceRef="scripttask10" targetRef="servicetask7"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+      <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
+        <omgdc:Bounds height="1744.0" width="1021.0" x="20.0" y="10.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
+        <omgdc:Bounds height="303.0" width="1001.0" x="40.0" y="10.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane2" id="BPMNShape_lane2">
+        <omgdc:Bounds height="333.0" width="1001.0" x="40.0" y="313.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane3" id="BPMNShape_lane3">
+        <omgdc:Bounds height="333.0" width="1001.0" x="40.0" y="646.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane4" id="BPMNShape_lane4">
+        <omgdc:Bounds height="293.0" width="1001.0" x="40.0" y="979.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane5" id="BPMNShape_lane5">
+        <omgdc:Bounds height="239.0" width="1001.0" x="40.0" y="1272.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane6" id="BPMNShape_lane6">
+        <omgdc:Bounds height="239.0" width="1001.0" x="40.0" y="1511.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="105.0" y="662.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="determineApprovedDUAs" id="BPMNShape_determineApprovedDUAs">
+        <omgdc:Bounds height="60.0" width="105.0" x="70.0" y="713.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pickApprovedDUA" id="BPMNShape_pickApprovedDUA">
+        <omgdc:Bounds height="55.0" width="105.0" x="70.0" y="786.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="addDUA" id="BPMNShape_addDUA">
+        <omgdc:Bounds height="55.0" width="105.0" x="70.0" y="856.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+        <omgdc:Bounds height="60.0" width="105.0" x="300.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask2" id="BPMNShape_servicetask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="440.0" y="122.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask3" id="BPMNShape_servicetask3">
+        <omgdc:Bounds height="60.0" width="105.0" x="580.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask4" id="BPMNShape_servicetask4">
+        <omgdc:Bounds height="55.0" width="105.0" x="720.0" y="122.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask1" id="BPMNShape_scripttask1">
+        <omgdc:Bounds height="60.0" width="105.0" x="160.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1080.0" y="483.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="confirmDataLoaded" id="BPMNShape_confirmDataLoaded">
+        <omgdc:Bounds height="55.0" width="105.0" x="300.0" y="680.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="runDQChecks" id="BPMNShape_runDQChecks">
+        <omgdc:Bounds height="55.0" width="105.0" x="300.0" y="772.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="createDQReport" id="BPMNShape_createDQReport">
+        <omgdc:Bounds height="55.0" width="105.0" x="714.0" y="772.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reviewDQReport" id="BPMNShape_reviewDQReport">
+        <omgdc:Bounds height="55.0" width="105.0" x="440.0" y="890.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="completeAsSummary" id="BPMNShape_completeAsSummary">
+        <omgdc:Bounds height="55.0" width="105.0" x="690.0" y="890.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask5" id="BPMNShape_servicetask5">
+        <omgdc:Bounds height="65.0" width="105.0" x="610.0" y="675.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask2" id="BPMNShape_scripttask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="750.0" y="680.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask3" id="BPMNShape_scripttask3">
+        <omgdc:Bounds height="55.0" width="105.0" x="560.0" y="772.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask4" id="BPMNShape_scripttask4">
+        <omgdc:Bounds height="55.0" width="105.0" x="300.0" y="890.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask5" id="BPMNShape_scripttask5">
+        <omgdc:Bounds height="55.0" width="105.0" x="560.0" y="890.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask6" id="BPMNShape_scripttask6">
+        <omgdc:Bounds height="55.0" width="105.0" x="880.0" y="870.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask6" id="BPMNShape_servicetask6">
+        <omgdc:Bounds height="71.0" width="105.0" x="340.0" y="483.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="61.0" width="105.0" x="340.0" y="393.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="372.0" y="333.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
+        <omgdc:Bounds height="61.0" width="105.0" x="510.0" y="323.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="callactivity2" id="BPMNShape_callactivity2">
+        <omgdc:Bounds height="61.0" width="105.0" x="200.0" y="1049.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="360.0" y="1059.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
+        <omgdc:Bounds height="40.0" width="40.0" x="660.0" y="333.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask7" id="BPMNShape_servicetask7">
+        <omgdc:Bounds height="65.0" width="105.0" x="590.0" y="1000.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+        <omgdc:Bounds height="61.0" width="105.0" x="200.0" y="1369.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask8" id="BPMNShape_servicetask8">
+        <omgdc:Bounds height="61.0" width="105.0" x="200.0" y="1290.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="350.0" y="1379.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask9" id="BPMNShape_servicetask9">
+        <omgdc:Bounds height="71.0" width="105.0" x="430.0" y="1350.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask10" id="BPMNShape_servicetask10">
+        <omgdc:Bounds height="72.0" width="105.0" x="430.0" y="1429.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask11" id="BPMNShape_servicetask11">
+        <omgdc:Bounds height="61.0" width="105.0" x="430.0" y="1280.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask12" id="BPMNShape_servicetask12">
+        <omgdc:Bounds height="64.0" width="105.0" x="440.0" y="37.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask13" id="BPMNShape_servicetask13">
+        <omgdc:Bounds height="55.0" width="105.0" x="580.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask14" id="BPMNShape_servicetask14">
+        <omgdc:Bounds height="64.0" width="105.0" x="720.0" y="37.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="910.0" y="51.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask7" id="BPMNShape_scripttask7">
+        <omgdc:Bounds height="55.0" width="105.0" x="720.0" y="1283.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask8" id="BPMNShape_scripttask8">
+        <omgdc:Bounds height="55.0" width="105.0" x="550.0" y="1283.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="480.0" y="687.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway6" id="BPMNShape_exclusivegateway6">
+        <omgdc:Bounds height="40.0" width="40.0" x="480.0" y="779.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway7" id="BPMNShape_exclusivegateway7">
+        <omgdc:Bounds height="40.0" width="40.0" x="830.0" y="840.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway8" id="BPMNShape_exclusivegateway8">
+        <omgdc:Bounds height="40.0" width="40.0" x="818.0" y="897.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="callactivity3" id="BPMNShape_callactivity3">
+        <omgdc:Bounds height="61.0" width="105.0" x="110.0" y="1590.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway9" id="BPMNShape_exclusivegateway9">
+        <omgdc:Bounds height="40.0" width="40.0" x="290.0" y="1600.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask9" id="BPMNShape_scripttask9">
+        <omgdc:Bounds height="55.0" width="105.0" x="300.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask10" id="BPMNShape_scripttask10">
+        <omgdc:Bounds height="55.0" width="105.0" x="430.0" y="1005.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="122.0" y="697.0"></omgdi:waypoint>
+        <omgdi:waypoint x="122.0" y="713.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="122.0" y="773.0"></omgdi:waypoint>
+        <omgdi:waypoint x="122.0" y="786.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="122.0" y="841.0"></omgdi:waypoint>
+        <omgdi:waypoint x="122.0" y="856.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="175.0" y="883.0"></omgdi:waypoint>
+        <omgdi:waypoint x="212.0" y="882.0"></omgdi:waypoint>
+        <omgdi:waypoint x="212.0" y="698.0"></omgdi:waypoint>
+        <omgdi:waypoint x="212.0" y="259.0"></omgdi:waypoint>
+        <omgdi:waypoint x="212.0" y="180.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="405.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="440.0" y="149.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="545.0" y="149.0"></omgdi:waypoint>
+        <omgdi:waypoint x="580.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="685.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="720.0" y="149.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="825.0" y="149.0"></omgdi:waypoint>
+        <omgdi:waypoint x="848.0" y="149.0"></omgdi:waypoint>
+        <omgdi:waypoint x="848.0" y="261.0"></omgdi:waypoint>
+        <omgdi:waypoint x="292.0" y="261.0"></omgdi:waypoint>
+        <omgdi:waypoint x="292.0" y="641.0"></omgdi:waypoint>
+        <omgdi:waypoint x="352.0" y="680.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="405.0" y="707.0"></omgdi:waypoint>
+        <omgdi:waypoint x="480.0" y="707.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
+        <omgdi:waypoint x="819.0" y="799.0"></omgdi:waypoint>
+        <omgdi:waypoint x="850.0" y="798.0"></omgdi:waypoint>
+        <omgdi:waypoint x="850.0" y="840.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+        <omgdi:waypoint x="715.0" y="707.0"></omgdi:waypoint>
+        <omgdi:waypoint x="750.0" y="707.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="405.0" y="799.0"></omgdi:waypoint>
+        <omgdi:waypoint x="480.0" y="799.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="665.0" y="799.0"></omgdi:waypoint>
+        <omgdi:waypoint x="714.0" y="799.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow19" id="BPMNEdge_flow19">
+        <omgdi:waypoint x="405.0" y="917.0"></omgdi:waypoint>
+        <omgdi:waypoint x="440.0" y="917.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+        <omgdi:waypoint x="545.0" y="917.0"></omgdi:waypoint>
+        <omgdi:waypoint x="560.0" y="917.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+        <omgdi:waypoint x="665.0" y="917.0"></omgdi:waypoint>
+        <omgdi:waypoint x="690.0" y="917.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
+        <omgdi:waypoint x="795.0" y="917.0"></omgdi:waypoint>
+        <omgdi:waypoint x="818.0" y="917.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+        <omgdi:waypoint x="932.0" y="870.0"></omgdi:waypoint>
+        <omgdi:waypoint x="932.0" y="574.0"></omgdi:waypoint>
+        <omgdi:waypoint x="703.0" y="574.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.0" y="574.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.0" y="554.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
+        <omgdi:waypoint x="265.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="300.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+        <omgdi:waypoint x="392.0" y="483.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.0" y="454.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow26" id="BPMNEdge_flow26">
+        <omgdi:waypoint x="392.0" y="393.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.0" y="373.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow29" id="BPMNEdge_flow29">
+        <omgdi:waypoint x="412.0" y="353.0"></omgdi:waypoint>
+        <omgdi:waypoint x="510.0" y="353.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="66.0" x="427.0" y="320.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow30" id="BPMNEdge_flow30">
+        <omgdi:waypoint x="372.0" y="353.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="352.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="597.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="1049.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="76.0" x="287.0" y="313.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow31" id="BPMNEdge_flow31">
+        <omgdi:waypoint x="305.0" y="1079.0"></omgdi:waypoint>
+        <omgdi:waypoint x="360.0" y="1079.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow32" id="BPMNEdge_flow32">
+        <omgdi:waypoint x="380.0" y="1059.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="1033.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="1032.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="42.0" x="380.0" y="970.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow33" id="BPMNEdge_flow33">
+        <omgdi:waypoint x="615.0" y="353.0"></omgdi:waypoint>
+        <omgdi:waypoint x="660.0" y="353.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
+        <omgdi:waypoint x="700.0" y="353.0"></omgdi:waypoint>
+        <omgdi:waypoint x="981.0" y="352.0"></omgdi:waypoint>
+        <omgdi:waypoint x="982.0" y="608.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1008.0" y="665.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1008.0" y="797.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1008.0" y="1136.0"></omgdi:waypoint>
+        <omgdi:waypoint x="769.0" y="1137.0"></omgdi:waypoint>
+        <omgdi:waypoint x="533.0" y="1137.0"></omgdi:waypoint>
+        <omgdi:waypoint x="482.0" y="1060.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="42.0" x="724.0" y="320.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow37" id="BPMNEdge_flow37">
+        <omgdi:waypoint x="642.0" y="1000.0"></omgdi:waypoint>
+        <omgdi:waypoint x="642.0" y="965.0"></omgdi:waypoint>
+        <omgdi:waypoint x="724.0" y="965.0"></omgdi:waypoint>
+        <omgdi:waypoint x="742.0" y="945.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow38" id="BPMNEdge_flow38">
+        <omgdi:waypoint x="252.0" y="1351.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="1369.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow39" id="BPMNEdge_flow39">
+        <omgdi:waypoint x="305.0" y="1399.0"></omgdi:waypoint>
+        <omgdi:waypoint x="350.0" y="1399.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow40" id="BPMNEdge_flow40">
+        <omgdi:waypoint x="370.0" y="1379.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="1310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="1310.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow41" id="BPMNEdge_flow41">
+        <omgdi:waypoint x="390.0" y="1399.0"></omgdi:waypoint>
+        <omgdi:waypoint x="429.0" y="1399.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="1385.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow42" id="BPMNEdge_flow42">
+        <omgdi:waypoint x="370.0" y="1419.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="1464.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="1465.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow43" id="BPMNEdge_flow43">
+        <omgdi:waypoint x="802.0" y="735.0"></omgdi:waypoint>
+        <omgdi:waypoint x="778.0" y="752.0"></omgdi:waypoint>
+        <omgdi:waypoint x="611.0" y="752.0"></omgdi:waypoint>
+        <omgdi:waypoint x="353.0" y="752.0"></omgdi:waypoint>
+        <omgdi:waypoint x="352.0" y="772.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow44" id="BPMNEdge_flow44">
+        <omgdi:waypoint x="535.0" y="1385.0"></omgdi:waypoint>
+        <omgdi:waypoint x="742.0" y="1385.0"></omgdi:waypoint>
+        <omgdi:waypoint x="772.0" y="1385.0"></omgdi:waypoint>
+        <omgdi:waypoint x="772.0" y="1338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow45" id="BPMNEdge_flow45">
+        <omgdi:waypoint x="482.0" y="1280.0"></omgdi:waypoint>
+        <omgdi:waypoint x="481.0" y="1250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="232.0" y="1250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="188.0" y="1250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="188.0" y="586.0"></omgdi:waypoint>
+        <omgdi:waypoint x="133.0" y="586.0"></omgdi:waypoint>
+        <omgdi:waypoint x="133.0" y="284.0"></omgdi:waypoint>
+        <omgdi:waypoint x="133.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="300.0" y="67.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow48" id="BPMNEdge_flow48">
+        <omgdi:waypoint x="545.0" y="69.0"></omgdi:waypoint>
+        <omgdi:waypoint x="580.0" y="67.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
+        <omgdi:waypoint x="685.0" y="67.0"></omgdi:waypoint>
+        <omgdi:waypoint x="720.0" y="69.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
+        <omgdi:waypoint x="825.0" y="69.0"></omgdi:waypoint>
+        <omgdi:waypoint x="910.0" y="68.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow51" id="BPMNEdge_flow51">
+        <omgdi:waypoint x="380.0" y="1099.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="1167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="1167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="1290.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="280.0" y="1150.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow52" id="BPMNEdge_flow52">
+        <omgdi:waypoint x="680.0" y="333.0"></omgdi:waypoint>
+        <omgdi:waypoint x="679.0" y="286.0"></omgdi:waypoint>
+        <omgdi:waypoint x="235.0" y="286.0"></omgdi:waypoint>
+        <omgdi:waypoint x="235.0" y="723.0"></omgdi:waypoint>
+        <omgdi:waypoint x="235.0" y="944.0"></omgdi:waypoint>
+        <omgdi:waypoint x="161.0" y="944.0"></omgdi:waypoint>
+        <omgdi:waypoint x="161.0" y="1319.0"></omgdi:waypoint>
+        <omgdi:waypoint x="200.0" y="1320.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="577.0" y="230.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow53" id="BPMNEdge_flow53">
+        <omgdi:waypoint x="535.0" y="1465.0"></omgdi:waypoint>
+        <omgdi:waypoint x="602.0" y="1464.0"></omgdi:waypoint>
+        <omgdi:waypoint x="602.0" y="1398.0"></omgdi:waypoint>
+        <omgdi:waypoint x="602.0" y="1338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow54" id="BPMNEdge_flow54">
+        <omgdi:waypoint x="602.0" y="1283.0"></omgdi:waypoint>
+        <omgdi:waypoint x="551.0" y="1258.0"></omgdi:waypoint>
+        <omgdi:waypoint x="551.0" y="956.0"></omgdi:waypoint>
+        <omgdi:waypoint x="272.0" y="956.0"></omgdi:waypoint>
+        <omgdi:waypoint x="272.0" y="800.0"></omgdi:waypoint>
+        <omgdi:waypoint x="300.0" y="799.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow55" id="BPMNEdge_flow55">
+        <omgdi:waypoint x="772.0" y="1283.0"></omgdi:waypoint>
+        <omgdi:waypoint x="742.0" y="1257.0"></omgdi:waypoint>
+        <omgdi:waypoint x="742.0" y="945.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow56" id="BPMNEdge_flow56">
+        <omgdi:waypoint x="520.0" y="707.0"></omgdi:waypoint>
+        <omgdi:waypoint x="610.0" y="707.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow57" id="BPMNEdge_flow57">
+        <omgdi:waypoint x="500.0" y="687.0"></omgdi:waypoint>
+        <omgdi:waypoint x="498.0" y="662.0"></omgdi:waypoint>
+        <omgdi:waypoint x="353.0" y="662.0"></omgdi:waypoint>
+        <omgdi:waypoint x="352.0" y="680.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow58" id="BPMNEdge_flow58">
+        <omgdi:waypoint x="520.0" y="799.0"></omgdi:waypoint>
+        <omgdi:waypoint x="560.0" y="799.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow59" id="BPMNEdge_flow59">
+        <omgdi:waypoint x="500.0" y="779.0"></omgdi:waypoint>
+        <omgdi:waypoint x="499.0" y="749.0"></omgdi:waypoint>
+        <omgdi:waypoint x="365.0" y="749.0"></omgdi:waypoint>
+        <omgdi:waypoint x="352.0" y="772.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow60" id="BPMNEdge_flow60">
+        <omgdi:waypoint x="850.0" y="840.0"></omgdi:waypoint>
+        <omgdi:waypoint x="766.0" y="827.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow61" id="BPMNEdge_flow61">
+        <omgdi:waypoint x="830.0" y="860.0"></omgdi:waypoint>
+        <omgdi:waypoint x="798.0" y="857.0"></omgdi:waypoint>
+        <omgdi:waypoint x="359.0" y="857.0"></omgdi:waypoint>
+        <omgdi:waypoint x="352.0" y="890.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow62" id="BPMNEdge_flow62">
+        <omgdi:waypoint x="838.0" y="897.0"></omgdi:waypoint>
+        <omgdi:waypoint x="835.0" y="879.0"></omgdi:waypoint>
+        <omgdi:waypoint x="811.0" y="879.0"></omgdi:waypoint>
+        <omgdi:waypoint x="742.0" y="890.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow63" id="BPMNEdge_flow63">
+        <omgdi:waypoint x="858.0" y="917.0"></omgdi:waypoint>
+        <omgdi:waypoint x="865.0" y="937.0"></omgdi:waypoint>
+        <omgdi:waypoint x="906.0" y="937.0"></omgdi:waypoint>
+        <omgdi:waypoint x="932.0" y="925.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow64" id="BPMNEdge_flow64">
+        <omgdi:waypoint x="392.0" y="333.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.0" y="236.0"></omgdi:waypoint>
+        <omgdi:waypoint x="256.0" y="236.0"></omgdi:waypoint>
+        <omgdi:waypoint x="256.0" y="933.0"></omgdi:waypoint>
+        <omgdi:waypoint x="160.0" y="934.0"></omgdi:waypoint>
+        <omgdi:waypoint x="162.0" y="1590.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="69.0" x="301.0" y="180.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow65" id="BPMNEdge_flow65">
+        <omgdi:waypoint x="215.0" y="1620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="290.0" y="1620.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow66" id="BPMNEdge_flow66">
+        <omgdi:waypoint x="310.0" y="1600.0"></omgdi:waypoint>
+        <omgdi:waypoint x="308.0" y="1540.0"></omgdi:waypoint>
+        <omgdi:waypoint x="129.0" y="1540.0"></omgdi:waypoint>
+        <omgdi:waypoint x="130.0" y="1329.0"></omgdi:waypoint>
+        <omgdi:waypoint x="200.0" y="1320.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="240.0" y="1480.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow67" id="BPMNEdge_flow67">
+        <omgdi:waypoint x="330.0" y="1620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="928.0" y="1620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="928.0" y="1100.0"></omgdi:waypoint>
+        <omgdi:waypoint x="776.0" y="1101.0"></omgdi:waypoint>
+        <omgdi:waypoint x="609.0" y="1100.0"></omgdi:waypoint>
+        <omgdi:waypoint x="482.0" y="1060.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="42.0" x="372.0" y="1584.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow68" id="BPMNEdge_flow68">
+        <omgdi:waypoint x="405.0" y="67.0"></omgdi:waypoint>
+        <omgdi:waypoint x="440.0" y="69.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow69" id="BPMNEdge_flow69">
+        <omgdi:waypoint x="535.0" y="1032.0"></omgdi:waypoint>
+        <omgdi:waypoint x="590.0" y="1032.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <collaboration id="Collaboration">
+    <participant id="pool1" name="Intake Code Value" processRef="intakeCodeValue"></participant>
+  </collaboration>
+  <process id="intakeCodeValue" name="Propose New Code Value" isExecutable="true">
+    <documentation>This process can be used to propose new code values. The term will be created using the entered characteristics and placed in the "Data Governance Council" community.</documentation>
+    <laneSet id="laneSet_intakeCodeValue">
+      <lane id="lane1">
+        <flowNodeRef>endevent1</flowNodeRef>
+        <flowNodeRef>servicetask1</flowNodeRef>
+        <flowNodeRef>startevent1</flowNodeRef>
+      </lane>
+    </laneSet>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <startEvent id="startevent1" name="Start">
+      <extensionElements>
+        <activiti:formProperty id="intakeVocabulary" name="Enter the id of the vocabulary to take in the created term" type="string" default="00000000-0000-0000-0000-000000006014" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="signifier" name="Code" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="conceptType" name="Type" type="term" required="true">
+          <activiti:value id="proposedFixed" name="true"></activiti:value>
+          <activiti:value id="proposedValues" name="00000000-0000-0000-0000-000000021001"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="description" name="Proposed Description" type="textarea"></activiti:formProperty>
+        <activiti:formProperty id="example" name="Example" type="textarea"></activiti:formProperty>
+        <activiti:formProperty id="usesrelation" name="Related Assets" type="term">
+          <activiti:value id="multiValue" name="true"></activiti:value>
+          <activiti:value id="conceptType" name="00000000-0000-0000-0000-000000031000"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="note" name="Reason for proposal" type="textarea"></activiti:formProperty>
+        <activiti:formProperty id="submit" name="Propose" type="button" default="false"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <serviceTask id="servicetask1" name="Create Term" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.TermIntakeDelegate">
+      <extensionElements>
+        <activiti:field name="signifier">
+          <activiti:expression>${signifier}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="conceptType">
+          <activiti:expression>${conceptType}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="vocabulary">
+          <activiti:expression>${intakeVocabulary}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="definition">
+          <activiti:expression>${definition}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="description">
+          <activiti:expression>${description}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="example">
+          <activiti:expression>${example}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="usesrelation">
+          <activiti:expression>${usesrelation}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="note">
+          <activiti:expression>${note}</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="servicetask1"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="servicetask1" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+      <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
+        <omgdc:Bounds height="150.0" width="461.0" x="110.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="180.0" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="490.0" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
+        <omgdc:Bounds height="150.0" width="481.0" x="90.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="290.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="215.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="290.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="395.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="490.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

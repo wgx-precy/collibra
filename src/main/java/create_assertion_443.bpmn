@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <collaboration id="Collaboration">
+    <participant id="create_assertion_id" name="Create Assertion" processRef="create_assertion"></participant>
+  </collaboration>
+  <process id="create_assertion" name="Create Assertion" isExecutable="true">
+    <documentation>This is the create assertion workflow.</documentation>
+    <laneSet id="laneSet_create_assertion">
+      <lane id="lane2" name="Collibra">
+        <flowNodeRef>endevent1</flowNodeRef>
+        <flowNodeRef>startevent1</flowNodeRef>
+        <flowNodeRef>createAssertion</flowNodeRef>
+        <flowNodeRef>addAttributes</flowNodeRef>
+        <flowNodeRef>startAssertionApproval</flowNodeRef>
+      </lane>
+    </laneSet>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <startEvent id="startevent1" name="Start" activiti:initiator="requester">
+      <documentation>Complete the name and description of the assertion and then choose an approved DUA for this assertion.</documentation>
+      <extensionElements>
+        <activiti:formProperty id="asAssetName" name="&lt;b&gt;&lt;font color=&quot;red&quot;&gt;*&lt;/font&gt;Name of Assertion&lt;/b&gt;" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="asDescription" name="Assertion Description" type="textarea"></activiti:formProperty>
+        <activiti:formProperty id="dateStart" name="Please choose the start date." type="datetime" datePattern="MM-dd-YYYY" required="true">
+          <activiti:value id="dateTimeType" name="date"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="submit" name="Next Step - Choose Approved DUA" type="button" default="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="asConceptTypeID" name="The UUID of the asset type 'assertion'" type="string" default="bffb5661-1f89-4023-ab65-e3ecab4218c2" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="createAssertionApprovalID" name="The ID of the Create Assertion Approval workflow" type="string" default="createAssertionApproval" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="assertionIntakeDomainID" name="UUID of the 'Assertion' domain" type="string" default="ccd5bc9b-71c2-42e0-aa75-84503e27fdad" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Attr_AsStartDate" name="UUID of the attribute 'Assertion Start Date'" type="string" default="1a1abbe5-4249-445a-9f22-13d79fae96c0" readable="false" required="true"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <serviceTask id="createAssertion" name="Create Assertion" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.TermIntakeDelegate">
+      <extensionElements>
+        <activiti:field name="signifier">
+          <activiti:expression><![CDATA[${asAssetName}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="conceptType">
+          <activiti:expression><![CDATA[${asConceptTypeID}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="vocabulary">
+          <activiti:expression><![CDATA[${assertionIntakeDomainID}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="example">
+          <activiti:expression><![CDATA[${example}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="usesrelation">
+          <activiti:expression><![CDATA[${usesrelation}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="note">
+          <activiti:expression><![CDATA[${note}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="definition">
+          <activiti:expression><![CDATA[${definition}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="description">
+          <activiti:expression><![CDATA[${asDescription}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow9" sourceRef="startevent1" targetRef="createAssertion"></sequenceFlow>
+    <serviceTask id="startAssertionApproval" name="Start Assertion Approval" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.StartWorkflowInstanceDelegate">
+      <extensionElements>
+        <activiti:field name="resourceId">
+          <activiti:expression><![CDATA[${outputCreatedTermId}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="resourceType">
+          <activiti:string><![CDATA[TE]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="processId">
+          <activiti:expression><![CDATA[${createAssertionApprovalID}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="propertyKeyList">
+          <activiti:string><![CDATA[requester]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="propertyValueList">
+          <activiti:expression><![CDATA[${requester}]]></activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow10" sourceRef="createAssertion" targetRef="addAttributes"></sequenceFlow>
+    <scriptTask id="addAttributes" name="Add Attributes" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - INSIDE ADD ATTRIBUTES *****")
+
+loggerComponent.info("START - Add Attributes")
+ 
+/*
+TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+ 
+Calendar cal = Calendar.getInstance()
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+
+ 
+////****Used to test what date is being returned after Calendar operations
+startDateMidnightUTC = cal.getTime()
+loggerComponent.info("[LOGGING]startDateMidnightUTC&gt;&gt;&gt; "+startDateMidnightUTC)
+ 
+startDate = cal.getTime().getTime()
+loggerComponent.info("[LOGGING]startDate&gt;&gt;&gt; "+startDate)
+attributeComponent.addDateAttribute(outputCreatedTermId,UUID_Attr_AsStartDate,startDate.toString())
+*/
+
+attributeComponent.addDateAttribute(outputCreatedTermId,UUID_Attr_AsStartDate,dateStart.getTime().toString())
+
+loggerComponent.info("END - Add Attributes")</script>
+    </scriptTask>
+    <sequenceFlow id="flow11" sourceRef="addAttributes" targetRef="startAssertionApproval"></sequenceFlow>
+    <sequenceFlow id="flow12" sourceRef="startAssertionApproval" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+      <bpmndi:BPMNShape bpmnElement="create_assertion_id" id="BPMNShape_create_assertion_id">
+        <omgdc:Bounds height="191.0" width="851.0" x="20.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="lane2" id="BPMNShape_lane2">
+        <omgdc:Bounds height="190.0" width="831.0" x="40.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="790.0" y="128.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="130.0" y="130.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="createAssertion" id="BPMNShape_createAssertion">
+        <omgdc:Bounds height="55.0" width="105.0" x="220.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startAssertionApproval" id="BPMNShape_startAssertionApproval">
+        <omgdc:Bounds height="71.0" width="105.0" x="570.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="addAttributes" id="BPMNShape_addAttributes">
+        <omgdc:Bounds height="55.0" width="105.0" x="400.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="165.0" y="147.0"></omgdi:waypoint>
+        <omgdi:waypoint x="220.0" y="147.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="325.0" y="147.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="147.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
+        <omgdi:waypoint x="505.0" y="147.0"></omgdi:waypoint>
+        <omgdi:waypoint x="570.0" y="145.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
+        <omgdi:waypoint x="675.0" y="145.0"></omgdi:waypoint>
+        <omgdi:waypoint x="790.0" y="145.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
