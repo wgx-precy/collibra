@@ -4,67 +4,130 @@
     <participant id="pool1" name="Test Dropdown Selection" processRef="testDropdown"></participant>
   </collaboration>
   <process id="testDropdown" name="Test Dropdown Workflow" isExecutable="true">
-    <documentation>This process can be used to propose new business terms. The term will be created using the entered characteristics and placed in the "Data Governance Council" community.</documentation>
+    <documentation>TTTTT   This process can be used to propose new business terms. The term will be created using the entered characteristics and placed in the "Data Governance Council" community.</documentation>
     <laneSet id="laneSet_testDropdown">
       <lane id="lane1">
         <flowNodeRef>endevent1</flowNodeRef>
         <flowNodeRef>startevent1</flowNodeRef>
-        <flowNodeRef>createDropDownOptions</flowNodeRef>
         <flowNodeRef>userForm</flowNodeRef>
+        <flowNodeRef>boundarytimer1</flowNodeRef>
+        <flowNodeRef>setTimeList</flowNodeRef>
+        <flowNodeRef>setNextTime</flowNodeRef>
+        <flowNodeRef>sendEmail</flowNodeRef>
       </lane>
     </laneSet>
     <endEvent id="endevent1" name="End"></endEvent>
-    <startEvent id="startevent1" name="testDropdownStart" activiti:initiator="startUser"></startEvent>
-    <scriptTask id="createDropDownOptions" name="create dropdown options" scriptFormat="groovy" activiti:autoStoreVariables="false">
-      <script>loggerComponent.info("[[ LOGGING ]] - ********WGX CREATE DROPDOWN OPTION SCRIPT******");
-def dropdownOptions = "opt1,opt2,opt3,opt4";
-loggerComponent.info("[[ LOGGING ]] - ********DROP DOWN OPTIONS******" + dropdownOptions );</script>
+    <startEvent id="startevent1" name="testDropdownStart" activiti:initiator="startUser">
+      <extensionElements>
+        <activiti:formProperty id="dateOptions" name="date options" type="string" default="21/1,22/1,23/1"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <scriptTask id="setTimeList" name="set time list" activiti:async="true" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET TIME LIST******");
+loggerComponent.info("[[ LOGGING ]] - ********DATA OPTIONS******" + dateOptions);</script>
     </scriptTask>
     <userTask id="userForm" name="user form" activiti:candidateUsers="user(${startUser})">
       <extensionElements>
-        <activiti:formProperty id="testSelected" name="Select" type="term" required="true">
-          <activiti:value id="multiValued" name="false"></activiti:value>
-          <activiti:value id="proposedFixed" name="true"></activiti:value>
-          <activiti:value id="proposedValues" name="${dropdownOptions}"></activiti:value>
-        </activiti:formProperty>
-        <activiti:formProperty id="formName" name="form name" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="cancel" name="Cancel Task" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="textArea" name="text area"></activiti:formProperty>
       </extensionElements>
     </userTask>
-    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="createDropDownOptions"></sequenceFlow>
-    <sequenceFlow id="flow2" sourceRef="createDropDownOptions" targetRef="userForm"></sequenceFlow>
-    <sequenceFlow id="flow3" sourceRef="userForm" targetRef="endevent1"></sequenceFlow>
+    <scriptTask id="setNextTime" name="set next time" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>import java.text.DateFormat
+import java.text.SimpleDateFormat
+import groovy.time.TimeCategory
+
+def getISO8601Date={Date date-&gt;
+		TimeZone tz 		= TimeZone.getTimeZone("UTC")
+		DateFormat df		= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
+		df.setTimeZone		(tz)
+		String nowAsISO 	= df.format(date)
+		nowAsISO
+	}
+
+loggerComponent.info("[[ LOGGING ]] - ********SET NEXT LIST******");
+Date currentDate =  new Date();
+loggerComponent.info("[[ LOGGING ]] - ********current date******"+currentDate);
+
+use( TimeCategory ) {
+    currentDate= currentDate+ 1.minutes
+}
+
+String nextCertificationDate	 = getISO8601Date(currentDate);
+loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextCertificationDate);
+execution.setVariable('nextCertificationDate', nextCertificationDate)
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="setTimeList"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="setTimeList" targetRef="setNextTime"></sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="setNextTime" targetRef="userForm"></sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="userForm" targetRef="endevent1"></sequenceFlow>
+    <scriptTask id="sendEmail" name="send e-mail" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SEND E MAIL******");
+loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextCertificationDate);</script>
+    </scriptTask>
+    <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="userForm" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDate>${nextCertificationDate}</timeDate>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow5" sourceRef="boundarytimer1" targetRef="sendEmail"></sequenceFlow>
+    <sequenceFlow id="flow6" sourceRef="sendEmail" targetRef="setNextTime"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
     <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
       <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
-        <omgdc:Bounds height="150.0" width="671.0" x="90.0" y="40.0"></omgdc:Bounds>
+        <omgdc:Bounds height="281.0" width="891.0" x="80.0" y="40.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
-        <omgdc:Bounds height="150.0" width="651.0" x="110.0" y="40.0"></omgdc:Bounds>
+        <omgdc:Bounds height="281.0" width="871.0" x="100.0" y="40.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="670.0" y="100.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="910.0" y="160.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="180.0" y="100.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="150.0" y="160.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="createDropDownOptions" id="BPMNShape_createDropDownOptions">
-        <omgdc:Bounds height="55.0" width="105.0" x="280.0" y="90.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="setTimeList" id="BPMNShape_setTimeList">
+        <omgdc:Bounds height="55.0" width="105.0" x="270.0" y="150.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="userForm" id="BPMNShape_userForm">
-        <omgdc:Bounds height="55.0" width="105.0" x="480.0" y="90.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="730.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="770.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="setNextTime" id="BPMNShape_setNextTime">
+        <omgdc:Bounds height="55.0" width="105.0" x="500.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sendEmail" id="BPMNShape_sendEmail">
+        <omgdc:Bounds height="55.0" width="105.0" x="620.0" y="250.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
-        <omgdi:waypoint x="215.0" y="117.0"></omgdi:waypoint>
-        <omgdi:waypoint x="280.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="185.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="270.0" y="177.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
-        <omgdi:waypoint x="385.0" y="117.0"></omgdi:waypoint>
-        <omgdi:waypoint x="480.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="375.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="500.0" y="177.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
-        <omgdi:waypoint x="585.0" y="117.0"></omgdi:waypoint>
-        <omgdi:waypoint x="670.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="605.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="730.0" y="177.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="835.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="910.0" y="177.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="785.0" y="220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="784.0" y="277.0"></omgdi:waypoint>
+        <omgdi:waypoint x="725.0" y="277.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="620.0" y="277.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="277.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="205.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
