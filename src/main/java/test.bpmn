@@ -19,7 +19,7 @@
     <endEvent id="endevent1" name="End"></endEvent>
     <startEvent id="startevent1" name="testDropdownStart" activiti:initiator="startUser">
       <extensionElements>
-        <activiti:formProperty id="dateInputs" name="date options" type="string" default="21/1,22/1,23/1"></activiti:formProperty>
+        <activiti:formProperty id="dateInputs" name="Notification Dates (mm/dd)" type="string" default="1/21,1/22,1/23"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <scriptTask id="setTimeList" name="set time list" activiti:async="true" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -64,6 +64,9 @@ import groovy.time.TimeCategory
 
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT BEGIN******");
 
+// task terminate flag, set to true to end task if no more notifiy date in notification date list
+def taskTerminate = false
+
 Date currentDate =  new Date();
 
 def getISO8601Date = { Date date-&gt;
@@ -76,8 +79,8 @@ def getISO8601Date = { Date date-&gt;
 
 def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
 		Date nextNotifcationDate
-loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
 		/*Loop through the notification Date List, and find the next one*/
+		loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
 		for (notifcationDate in notificationDateList){
 			if(currentDate &lt; notifcationDate){
 				nextNotifcationDate = notifcationDate
@@ -87,6 +90,7 @@ loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+
 		/*If this year does not include any more recertification dates, set nextNotifcationDate to current date and terminate to true */
 		if(nextNotifcationDate == null){
 			nextNotifcationDate = currentDate
+			taskTerminate = true
 		}	
 		nextNotifcationDate
 	}
@@ -100,7 +104,7 @@ use( TimeCategory ) {
 String nextNotificationDate = getISO8601Date(currentDate);
 loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
 execution.setVariable('nextCertificationDate', nextNotificationDate);
-
+execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
 </script>
     </scriptTask>
@@ -110,6 +114,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT 
     <sequenceFlow id="flow4" sourceRef="userForm" targetRef="endevent1"></sequenceFlow>
     <scriptTask id="sendEmail" name="send e-mail" scriptFormat="groovy" activiti:autoStoreVariables="false">
       <script>loggerComponent.info("[[ LOGGING ]] - ********SEND E MAIL******");
+loggerComponent.info("[[ LOGGING ]] - ********taskTerminate******"+taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextCertificationDate);</script>
     </scriptTask>
     <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="userForm" cancelActivity="true">
