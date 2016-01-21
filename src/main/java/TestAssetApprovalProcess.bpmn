@@ -10,7 +10,7 @@ The subject matter expert is first asked to review the definition. After that, h
 After that the stakeholders are given an opportunity to provide comments. The subject matter expert is then provided with a task to process the comments and is asked to verify the provided rules &amp; policies. 
 
 Tghe next step is that all the stewards of the related policies &amp; rules are asked to vote for compliance of their rule/policy. If all stewards vote yes, the stakeholders and the subject matter expert is notified and the process ends. If one of the stewards votes no, the subject matter expert is asked to adjust the data asset for compliance and the voting process is triggered again.</documentation>
-    <laneSet id="laneSet_assetApproval">
+    <laneSet id="laneSet_testAssetApproval">
       <lane id="lane1" name="Start User">
         <flowNodeRef>endevent2</flowNodeRef>
         <flowNodeRef>correct_description</flowNodeRef>
@@ -102,14 +102,14 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
           <activiti:string><![CDATA[accepted]]></activiti:string>
         </activiti:field>
         <activiti:field name="mailTo">
-          <activiti:expression>${stakeholderUserExpression}</activiti:expression>
+          <activiti:expression><![CDATA[${stakeholderUserExpression}]]></activiti:expression>
         </activiti:field>
       </extensionElements>
     </serviceTask>
     <serviceTask id="servicetask9" name="Notify Subject Matter Expert" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
       <extensionElements>
         <activiti:field name="mailTo">
-          <activiti:expression>${smeUserExpression}</activiti:expression>
+          <activiti:expression><![CDATA[${smeUserExpression}]]></activiti:expression>
         </activiti:field>
         <activiti:field name="template">
           <activiti:string><![CDATA[accepted]]></activiti:string>
@@ -133,7 +133,7 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
       <serviceTask id="servicetask2" name="Store comment" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.AddComment">
         <extensionElements>
           <activiti:field name="comment">
-            <activiti:expression>${comment}</activiti:expression>
+            <activiti:expression><![CDATA[${comment}]]></activiti:expression>
           </activiti:field>
         </extensionElements>
       </serviceTask>
@@ -261,7 +261,7 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
           <activiti:string><![CDATA[accepted]]></activiti:string>
         </activiti:field>
         <activiti:field name="mailTo">
-          <activiti:expression>user(${startUser})</activiti:expression>
+          <activiti:expression><![CDATA[user(${startUser})]]></activiti:expression>
         </activiti:field>
       </extensionElements>
     </serviceTask>
@@ -405,7 +405,7 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
         <omgdi:waypoint x="720.0" y="616.0"></omgdi:waypoint>
         <omgdi:waypoint x="790.0" y="616.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="12.0" width="45.0" x="831.0" y="1140.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="45.0" x="831.0" y="1140.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow35" id="BPMNEdge_flow35">
@@ -443,7 +443,7 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
         <omgdi:waypoint x="700.0" y="596.0"></omgdi:waypoint>
         <omgdi:waypoint x="697.0" y="481.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="12.0" width="39.0" x="795.0" y="1060.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="39.0" x="795.0" y="1060.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
@@ -454,14 +454,14 @@ Tghe next step is that all the stewards of the related policies &amp; rules are 
         <omgdi:waypoint x="420.0" y="200.0"></omgdi:waypoint>
         <omgdi:waypoint x="470.0" y="200.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="12.0" width="45.0" x="520.0" y="348.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="45.0" x="520.0" y="348.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow46" id="BPMNEdge_flow46">
         <omgdi:waypoint x="400.0" y="180.0"></omgdi:waypoint>
         <omgdi:waypoint x="400.0" y="125.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="12.0" width="39.0" x="486.0" y="281.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="39.0" x="486.0" y="281.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
