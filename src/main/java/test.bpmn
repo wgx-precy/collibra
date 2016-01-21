@@ -47,7 +47,7 @@ notificationDatStringList.each {date -&gt;
 		throw dgcError
 	}
 }
-
+execution.setVariable('notificationDateList', notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");</script>
     </scriptTask>
@@ -64,6 +64,8 @@ import groovy.time.TimeCategory
 
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT BEGIN******");
 
+Date currentDate =  new Date();
+
 def getISO8601Date = { Date date-&gt;
 		TimeZone tz = TimeZone.getTimeZone("UTC")
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
@@ -72,8 +74,24 @@ def getISO8601Date = { Date date-&gt;
 		nowAsISO
 	}
 
-Date currentDate =  new Date();
-loggerComponent.info("[[ LOGGING ]] - ==========currentDate=========="+currentDate);
+def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
+		Date nextNotifcationDate
+loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
+		/*Loop through the notification Date List, and find the next one*/
+		for (notifcationDate in notificationDateList){
+			if(currentDate &lt; notifcationDate){
+				nextNotifcationDate = notifcationDate
+				break;
+			}
+		}
+		/*If this year does not include any more recertification dates, set nextNotifcationDate to current date and terminate to true */
+		if(nextNotifcationDate == null){
+			nextNotifcationDate = currentDate
+		}	
+		nextNotifcationDate
+	}
+def testNotificationDate = getNextNotificationDate(notificationDateList);
+loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+testNotificationDate);
 
 use( TimeCategory ) {
     currentDate = currentDate+ 1.minutes

@@ -23,5 +23,6 @@ notificationDatStringList.each {date ->
 	}
 }
 
+execution.setVariable('notificationDateList', notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");
