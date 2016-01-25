@@ -54,7 +54,6 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
     <userTask id="userForm" name="user form" activiti:candidateUsers="user(${startUser})">
       <extensionElements>
         <activiti:formProperty id="cancel" name="Cancel Task" type="button" default="false"></activiti:formProperty>
-        <activiti:formProperty id="textArea" name="text area"></activiti:formProperty>
       </extensionElements>
     </userTask>
     <scriptTask id="setNextTime" name="set next time" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -119,7 +118,7 @@ loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextC
     </scriptTask>
     <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="userForm" cancelActivity="true">
       <timerEventDefinition>
-        <timeDate>${nextCertificationDate}</timeDate>
+        <timeDate>${nextNotificationDate}</timeDate>
       </timerEventDefinition>
     </boundaryEvent>
     <sequenceFlow id="flow5" sourceRef="boundarytimer1" targetRef="sendEmail"></sequenceFlow>
