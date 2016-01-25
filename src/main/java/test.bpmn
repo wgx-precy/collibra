@@ -19,6 +19,7 @@
     <endEvent id="endevent1" name="End"></endEvent>
     <startEvent id="startevent1" name="testDropdownStart" activiti:initiator="startUser">
       <extensionElements>
+        <activiti:formProperty id="yearInput" name="Target Year" type="string" default="2016"></activiti:formProperty>
         <activiti:formProperty id="dateInputs" name="Notification Dates (mm/dd)" type="string" default="1/21,1/22,1/23"></activiti:formProperty>
       </extensionElements>
     </startEvent>
@@ -28,6 +29,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT BEGIN******");
+loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
 loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
 
 int year = Calendar.getInstance().get(Calendar.YEAR)
@@ -47,6 +49,13 @@ notificationDatStringList.each {date -&gt;
 		throw dgcError
 	}
 }
+
+if(year.toString()&gt;yearInput) {
+	dgcError = new DGCException("${yearInput} - Dates must be equal or larger than ${year}")
+	dgcError.setTitleCode ("Invalid target year")
+	throw dgcError
+}
+
 execution.setVariable('notificationDateList', notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");</script>
@@ -102,7 +111,7 @@ use( TimeCategory ) {
 
 String nextNotificationDate = getISO8601Date(currentDate);
 loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
-execution.setVariable('nextCertificationDate', nextNotificationDate);
+execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
 </script>
@@ -114,7 +123,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT 
     <scriptTask id="sendEmail" name="send e-mail" scriptFormat="groovy" activiti:autoStoreVariables="false">
       <script>loggerComponent.info("[[ LOGGING ]] - ********SEND E MAIL******");
 loggerComponent.info("[[ LOGGING ]] - ********taskTerminate******"+taskTerminate);
-loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextCertificationDate);</script>
+loggerComponent.info("[[ LOGGING ]] - ********nextCertificationDate******"+nextNotificationDate);</script>
     </scriptTask>
     <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="userForm" cancelActivity="true">
       <timerEventDefinition>

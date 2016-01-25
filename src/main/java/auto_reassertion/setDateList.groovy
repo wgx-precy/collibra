@@ -3,6 +3,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT BEGIN******");
+loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
 loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
 
 int year = Calendar.getInstance().get(Calendar.YEAR)
@@ -21,6 +22,12 @@ notificationDatStringList.each {date ->
 		dgcError.setTitleCode ("Unparseable Date")
 		throw dgcError
 	}
+}
+
+if(year.toString()>yearInput) {
+	dgcError = new DGCException("${yearInput} - Dates must be equal or larger than ${year}")
+	dgcError.setTitleCode ("Invalid target year")
+	throw dgcError
 }
 
 execution.setVariable('notificationDateList', notificationDateList);
