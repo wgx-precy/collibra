@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="recertifyDomain" name="Recertify Assets in Domain" isExecutable="true">
+    <documentation>Process used to trigger individual recertification tasks for eligible assets in a domain</documentation>
+    <startEvent id="startevent1" name="Start" activiti:initiator="requester">
+      <extensionElements>
+        <activiti:formProperty id="certificationDates" name="Enter the dates (MM/DD) to run the certification process" type="string" default="01/01,04/01,07/01,10/01" required="true"></activiti:formProperty>
+        <activiti:formProperty id="assetTypesInScope" name="Select the Asset Types in scope for certfication" type="term" default="00000000-0000-0000-0000-000000011002,00000000-0000-0000-0000-000000031106" required="true">
+          <activiti:value id="multiValue" name="true"></activiti:value>
+          <activiti:value id="concepttype" name="00000000-0000-0000-0000-000000000005"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="statusTypesInScope" name="Select the Status Types in scope for certification" type="term" default="00000000-0000-0000-0000-000000005009" required="true">
+          <activiti:value id="multiValue" name="true"></activiti:value>
+          <activiti:value id="concepttype" name="00000000-0000-0000-0000-000000005007"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="certifierRole" name="Resource role responsible for certifying the asset" type="role" default="Steward" required="true"></activiti:formProperty>
+        <activiti:formProperty id="taskTitle" name="Default Task Ttile" type="string" default="Recertification Scheduled" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertifyAssetProcessId" name="Recertify Asset processId" type="string" default="recertifyAsset" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="runNow" name="Run recertfication at immediately at start of workflow" type="boolean" default="false" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertficationStartedTaskName" name="Task name used when recertification has begun" type="string" default="Recertification Process Has Started" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertificationStartedTaskDescription" name="Task description used when recertification has started" type="string" default="ASSET_COUNT asset(s) are now being processed for this recertification cycle." readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertficationCompletedTaskName" name="Task name used when recertification completes" type="string" default="Recertification Process Has Completed" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertificationCompletedTaskDescription" name="Task description used when recertification has completed" type="string" default="No eligible terms were identified for recertification based on Status Type, Asset Type." readable="false"></activiti:formProperty>
+        <activiti:formProperty id="certifiedDateAttrType" name="UUID of Certified Date Attribute Type" type="string" default="PLACEHOLDER" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="certifiedDateAttrSignifier" name="Name of new date attribute for certification process" type="string" default="Certified Date" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="recertifyDomainProcessId" name="ProcessId of Recertify Domain (current) workflow" type="string" default="recertifyDomain" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="adminRoleExpression" name="Role who will authorize all future recertification cycles" type="string" default="role(Admin)" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="initiateRecertficationTaskName" name="Task name used to initiate a scheduled recertiifcation" type="string" default="Initiate Recertification" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="initiateRecertficationTaskDescription" name="Task description used to initiate a scheduled recertiifcation" type="string" default="Start the recertification for CYCLE_DATE" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="taskDescriptionDefault" name="Text appended to task description" type="string" default="The next recertification cycle will begin on CYCLE_DATE" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="maxNumberMissingRoleAssets" name="Max number of assets with missing roles to display in form" type="long" default="5" readable="false"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="initializeVariables"></sequenceFlow>
+    <subProcess id="evaluateAssignedRoles" name="Evaluate Role Assignment for each Asset">
+      <multiInstanceLoopCharacteristics isSequential="true" activiti:collection="assetldList" activiti:elementVariable="assetId"></multiInstanceLoopCharacteristics>
+      <startEvent id="startevent2" name="Start"></startEvent>
+      <endEvent id="endevent2" name="End"></endEvent>
+      <sequenceFlow id="flow4" sourceRef="startevent2" targetRef="getAsset"></sequenceFlow>
+      <sequenceFlow id="flow5" sourceRef="addToReadyList" targetRef="endevent2"></sequenceFlow>
+      <serviceTask id="getAsset" name="Get Asset" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.term.GetTermDelegate">
+        <extensionElements>
+          <activiti:field name="termId">
+            <activiti:expression>${assetId}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="resultVariableName">
+            <activiti:string><![CDATA[asset]]></activiti:string>
+          </activiti:field>
+        </extensionElements>
+      </serviceTask>
+      <sequenceFlow id="flow6" sourceRef="getAsset" targetRef="certifierCount"></sequenceFlow>
+      <serviceTask id="certifierCount" name="Get Count of Certifiers on Asset" activiti:expression="${utility.toIdList(rightsComponent.getAllMembersByResourceAndRole(assetId, rightsComponent.getRoleByName(certifierRole).getId() ))}" activiti:resultVariableName="certifierList"></serviceTask>
+      <sequenceFlow id="flow20" sourceRef="certifierCount" targetRef="exclusivegateway3"></sequenceFlow>
+      <scriptTask id="addToNotReadyList" name="Add To &quot;Not Ready For Certification&quot; List" scriptFormat="groovy" activiti:autoStoreVariables="false">
+        <script>import com.collibra.dgc.core.model.representation.Term
+import org.slf4j.LoggerFactory
+
+
+def updateNotReadyForCertificationList = {Term term -&gt;
+
+	def codeContext 							="com.collibra.dgc.recertification.domain"
+	def log
+	def result									= [:]
+	def updatedNotReadyForCertificationList 	= []
+	def hyperLinkTextList 						= []
+
+	def init = {
+		log = LoggerFactory.getLogger(codeContext)
+		result
+	}
+
+	def buildHyperLinkText = {
+
+		StringBuilder url 	= new StringBuilder()
+		url.append(applicationComponent.getBaseURL())
+		url.append("term/")
+		url.append(term.id)
+		url.append("#tbt-tabbar-content=roles")
+
+		hyperLinkText 		= "&lt;a href=\"${url.toString()}\"  target=\"_blank\"&gt;${term.signifier}&lt;/a&gt;&lt;br/&gt;"
+		hyperLinkText
+	}
+
+
+	def exec = {
+		init()
+
+		updatedNotReadyForCertificationList.addAll(execution.getVariable("notReadyForCertificationList"))
+		updatedNotReadyForCertificationList.add(term.id)
+		result.notReadyForCertificationList 	= updatedNotReadyForCertificationList
+		result.notReadyForCertificationCount 	= String.valueOf(updatedNotReadyForCertificationList.size())
+
+		if(updatedNotReadyForCertificationList.size()&lt;= maxNumberMissingRoleAssets){
+			hyperLinkTextList.addAll(execution.getVariable("hyperLinkTextList"))
+			hyperLinkTextList.add(buildHyperLinkText())
+			result.hyperLinkTextList 				= hyperLinkTextList.unique()
+		}
+		result
+	}
+	exec()
+	result
+}
+
+
+
+def exportBindings = {
+	it.keySet().each{ var -&gt;
+		execution.setVariable(var, it[var])
+	}
+}
+
+exportBindings(updateNotReadyForCertificationList(asset ))</script>
+      </scriptTask>
+      <sequenceFlow id="flow21" sourceRef="addToNotReadyList" targetRef="endevent2"></sequenceFlow>
+      <scriptTask id="addToReadyList" name="Add To &quot;Ready For Certification&quot; List" scriptFormat="groovy" activiti:autoStoreVariables="false">
+        <script>readyForCertificationList.add(assetId)
+execution.setVariable("readyForCertificationList", readyForCertificationList)</script>
+      </scriptTask>
+      <exclusiveGateway id="exclusivegateway3" name="Exclusive Gateway"></exclusiveGateway>
+      <sequenceFlow id="flow18" name="Members found" sourceRef="exclusivegateway3" targetRef="addToReadyList">
+        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!certifierList.isEmpty()}]]></conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="flow19" name="Members not found" sourceRef="exclusivegateway3" targetRef="addToNotReadyList">
+        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${certifierList.isEmpty() }]]></conditionExpression>
+      </sequenceFlow>
+    </subProcess>
+    <scriptTask id="setCertificationDate" name="Set Recertification Date" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>import com.collibra.dgc.core.exceptions.DGCException
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import org.slf4j.LoggerFactory
+
+def setRecertificationDates={
+	def codeContext 		= "com.collibra.dgc.recertification.domain"
+	log 					= LoggerFactory.getLogger(codeContext)
+	result					= [:]
+	int year = Calendar.getInstance().get(Calendar.YEAR)
+
+	
+	def getISO8601Date={Date date-&gt;
+		TimeZone tz 		= TimeZone.getTimeZone("UTC")
+		DateFormat df		= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
+		df.setTimeZone		(tz)
+		String nowAsISO 	= df.format(date)
+		nowAsISO
+	}
+	
+	Date currentDate 		=  new Date()
+	
+	
+	def getLastCertificationDate={
+		//if first time running, recertify all assets
+		Date lastCertificationDate 		= execution.getVariable("currentCertificationDate")
+
+		if(lastCertificationDate==null)
+		{
+			lastCertificationDate 		= new SimpleDateFormat('MM/dd/yyyy').parse("01/01/1900")
+		}
+		result.lastCertificationDate	=lastCertificationDate
+
+		lastCertificationDate
+	}
+
+
+
+	def getCertificationDateList ={
+
+		/*Obtain and sort the certification dates (MM/dd)entered on start form
+		 ******************************************************/
+		List&lt;Date&gt; certificationDateList			= []
+		List&lt;String&gt; certificationDateStringList 	= utility.toList(certificationDates)
+		certificationDateStringList.sort()
+
+		certificationDateStringList.each {date -&gt;
+			try{
+				validDate 	=  new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(year.toString()))
+				certificationDateList.add(validDate)
+			}catch(java.text.ParseException e){
+				dgcError 	= new DGCException("${date} - Dates must be in MM/DD format")
+				dgcError.setTitleCode ("Unparseable Date")
+				throw dgcError
+			}
+		}
+		certificationDateList
+	}
+
+	def getNextCertificationDate ={List&lt;Date&gt; certificationDateList-&gt;
+		Date nextCertificationDate
+
+		/*Loop through the certification dates, and find the next one
+		 ******************************************************/
+		for (certificationDate in certificationDateList){
+
+			if(currentDate &lt; certificationDate){
+
+				nextCertificationDate = certificationDate
+
+				break;
+			}
+		}
+		/*If this year does not include any more recertification dates, look for the first occurrence next year
+		 ******************************************************/
+		if(nextCertificationDate ==null){
+			Calendar c = Calendar.getInstance()
+			c.setTime(certificationDateList.min() )
+			c.add(Calendar.YEAR, 1)
+			nextCertificationDate = c.getTime()
+		}
+
+ 		result.nextCertificationDateReadable		= new SimpleDateFormat('MM/dd/yyyy').format(nextCertificationDate)
+		result.taskDescriptionTwo					=taskDescriptionTwo.replace("CYCLE_DATE",result.nextCertificationDateReadable)
+		
+		nextCertificationDate
+	}
+
+
+
+	def exec = {
+		Date lastCertificationDate 				= 	getLastCertificationDate()
+ 		List&lt;Date&gt; certificationDateList		=	getCertificationDateList()		
+		String nextCertificationDate			= 	getISO8601Date(getNextCertificationDate(certificationDateList))
+ 		
+		result.nextCertificationDate			= nextCertificationDate
+		
+		result.currentCertificationDate			= currentDate
+		result.currentCertificationDateReadable	= new SimpleDateFormat('MM/dd/yyyy').format(currentDate)
+		result
+	}
+	
+	exec()
+
+}
+
+def exportBindings = {
+	it.keySet().each{ var -&gt;
+		execution.setVariable(var, it[var])
+	}
+}
+
+exportBindings(setRecertificationDates( ))
+ 
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow9" sourceRef="setCertificationDate" targetRef="exclusivegateway6"></sequenceFlow>
+    <scriptTask id="initializeVariables" name="Initialize Variables &amp; Set Configuration" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>
+import com.collibra.dgc.core.exceptions.DGCException
+import com.collibra.dgc.core.model.representation.WorkflowDefinition
+import org.slf4j.LoggerFactory
+
+def setVariables = {Boolean runNow, String certifiedDateAttrType -&gt;
+
+	def result		= [:]
+	def codeContext = "com.collibra.dgc.recertification.domain"
+	def log 		= LoggerFactory.getLogger(codeContext)
+
+	def setDefaultVariables ={
+		result.notReadyForCertificationList			= []
+		result.hyperLinkTextList					= []
+		result.readyForCertificationList			= []
+		result.notReadyForCertificationList		=[]
+ 		result.runNow								= runNow
+		result.cancel								= false
+		result.taskDescription								=  ""
+ 		result.taskDescriptionTwo					= taskDescriptionDefault
+		result
+	}
+	
+	
+
+	def updateWorkflowConfigurationVariables ={ String processId, Map&lt;String,String&gt; variablesToUpdate, Boolean accessiblity -&gt;
+		configurationVariableMap							= [:]
+		WorkflowDefinition workflowDefinition				= workflowComponent.getWorkflowDefinitionByProcessId(processId)
+		configurationVariableMap							= workflowDefinition.getConfigurationVariables()
+
+		variablesToUpdate.keySet().each {key -&gt; configurationVariableMap[key] = variablesToUpdate[key]}
+
+		workflowDefinition.setConfigurationVariables(configurationVariableMap)
+
+		if(accessiblity){
+			workflowDefinition.setRegisteredUserAccessible(accessiblity)
+		}
+	}
+	
+	
+
+	def checkCertfiedDate = {
+
+		if (certifiedDateAttrType=="PLACEHOLDER"){
+			certifiedDateAttrType 					= attributeTypeComponent.addDateAttributeType(certifiedDateAttrSignifier, "").getId()
+			result.certifiedDateAttrType 			= certifiedDateAttrType
+
+			updateWorkflowConfigurationVariables(recertifyDomainProcessId,["certifiedDateAttrType":certifiedDateAttrType], false)
+		}else{
+			try{
+				attributeTypeComponent.getAttributeType(certifiedDateAttrType)
+			}catch(e){
+				dgcError = new DGCException("The UUID ${certifiedDateAttrType} is not valid")
+				dgcError.setTitleCode("Error obtaining Attibute Type (Certified Date)")
+				throw dgcError
+			}
+		}
+		
+		updateWorkflowConfigurationVariables(recertifyAssetProcessId,["certifiedDateAttrType":certifiedDateAttrType], true)
+		
+	}
+
+	def exec = {
+ 		checkCertfiedDate()
+		setDefaultVariables()
+ 
+		result
+	}
+
+	exec()
+}
+
+def exportBindings = {
+	it.keySet().each{ var -&gt;
+		execution.setVariable(var, it[var])
+	}
+}
+
+exportBindings(setVariables(runNow,certifiedDateAttrType))
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow10" sourceRef="initializeVariables" targetRef="setCertificationDate"></sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="createdFilteredAssetList" targetRef="exclusivegateway2"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow13" name="Assets of specified type found in domain" sourceRef="exclusivegateway2" targetRef="evaluateAssignedRoles">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!assetldList.isEmpty()}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow14" name="No assets of specified type found in domain" sourceRef="exclusivegateway2" targetRef="setVariablesComplete">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${assetldList.isEmpty()}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway4" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow25" sourceRef="evaluateAssignedRoles" targetRef="exclusivegateway4"></sequenceFlow>
+    <sequenceFlow id="flow26" name="All assets have role assignments" sourceRef="exclusivegateway4" targetRef="recertifyEachAsset">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!readyForCertificationList.isEmpty()   && notReadyForCertificationList.isEmpty()}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="missingRoleMember" name="Assets Found With Missing Role Assignments" activiti:candidateUsers="${adminRoleExpression}">
+      <documentation>Assets of specified Asset and Status Type must have at least one ${certifierRole}</documentation>
+      <extensionElements>
+        <activiti:formProperty id="notReadyForCertificationCount " name="${hyperLinkTextCsv} &lt;hr/&gt;&lt;br/&gt; The assets above can not be processed until users are assigned to the ${certifierRole} role.  &lt;br/&gt;&lt;br/&gt; Total assets of specified Asset Type &amp; Status that will not be processed :" type="string" variable="notReadyForCertificationCount" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="continue" name="${eligibleAssetsFound}" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="restart" name="Restart Recertification" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="cancel" name="Cancel Recertification" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="taskButton" name="View Assets" type="taskButton"></activiti:formProperty>
+        <activiti:taskListener event="create" class="com.collibra.dgc.core.workflow.activiti.tasklistener.SetValueTaskListener">
+          <activiti:field name="valuesExpression">
+            <activiti:expression>${"&lt;u&gt;The first "}${maxNumberMissingRoleAssets}${" impacted assets are displayed below :&lt;/u&gt;&lt;br/&gt;"}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="resultVariable">
+            <activiti:string><![CDATA[impactedAssetHeader]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+        <activiti:taskListener event="create" class="com.collibra.dgc.core.workflow.activiti.tasklistener.SetValueTaskListener">
+          <activiti:field name="valuesExpression">
+            <activiti:expression>${notReadyForCertificationList.size()&gt;maxNumberMissingRoleAssets ? impactedAssetHeader : ""}${utility.toCsv(hyperLinkTextList).replace(",","")}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="resultVariable">
+            <activiti:string><![CDATA[hyperLinkTextCsv]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+        <activiti:taskListener event="create" class="com.collibra.dgc.core.workflow.activiti.tasklistener.SetValueTaskListener">
+          <activiti:field name="resultVariable">
+            <activiti:string><![CDATA[eligibleAssetsFound]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="valuesExpression">
+            <activiti:expression>${"Process The Remaining ["}${readyForCertificationList.size()}${"] Assets"}</activiti:expression>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow27" name="Not all assets have role assignments" sourceRef="exclusivegateway4" targetRef="missingRoleMember">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!notReadyForCertificationList.isEmpty()}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway5" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow28" sourceRef="missingRoleMember" targetRef="exclusivegateway5"></sequenceFlow>
+    <sequenceFlow id="flow29" name="continue with remaining assets" sourceRef="exclusivegateway5" targetRef="recertifyEachAsset">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${continue && readyForCertificationList.size()>0}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent4" name="End"></endEvent>
+    <sequenceFlow id="flow30" name="cancel certification" sourceRef="exclusivegateway5" targetRef="endevent4">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${cancel}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway6" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow32" name="run now" sourceRef="exclusivegateway6" targetRef="createdFilteredAssetList">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${runNow}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow33" name="wait for next recertification date" sourceRef="exclusivegateway6" targetRef="recertificationScheduled">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!runNow}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow36" name="restart recertification" sourceRef="exclusivegateway5" targetRef="initializeVariables">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${restart || (continue && readyForCertificationList.size()==0)}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow37" name="No eligible assets (type and status) were found" sourceRef="exclusivegateway4" targetRef="setVariablesComplete">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${readyForCertificationList.isEmpty()}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="recertificationScheduled" name="${taskTitle}" activiti:candidateUsers="${adminRoleExpression}">
+      <documentation>${taskDescription} ${taskDescriptionTwo}</documentation>
+      <extensionElements>
+        <activiti:formProperty id="runNow" name="Run Recertification Now" type="button" default="false"></activiti:formProperty>
+        <activiti:formProperty id="cancel" name="Cancel Recertification Process" type="button" default="false"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow42" sourceRef="recertificationScheduled" targetRef="cancelAssetRecertification"></sequenceFlow>
+    <scriptTask id="createdFilteredAssetList" name="Apply filter for Status and Asset Type" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <extensionElements>
+        <activiti:executionListener event="end" class="com.collibra.dgc.core.workflow.activiti.executionlistener.FlushExecutionListener"></activiti:executionListener>
+      </extensionElements>
+      <script>import com.collibra.dgc.core.model.representation.Term
+import org.slf4j.LoggerFactory
+
+log = LoggerFactory.getLogger("com.collibra.dgc.recertification.term")
+
+List&lt;String&gt; assetTypeIdList 		= utility.toList(assetTypesInScope)
+ 
+List&lt;String&gt; statusTypeIdList 		= utility.toList(statusTypesInScope)
+ 
+
+long termCount 						= vocabularyComponent.getNumberOfTerms(item.id)
+List&lt;Term&gt; allTerms 				= vocabularyComponent.getTerms(item.id, 0, termCount.toInteger())
+log.info("Total terms in domain [${item.name}] - ${allTerms.size}")
+
+List&lt;Term&gt; filteredTermList 		=	allTerms
+/*
+ * Filter for specify asset types
+ */
+filteredTermList 					= filteredTermList.findAll{ term -&gt; assetTypeIdList.contains(term.type.id)}
+log.info("Total terms remaining after asset type filter - ${filteredTermList.size}")
+
+/*
+ * Filter for specify status types
+ */
+filteredTermList 					= filteredTermList.findAll{ term -&gt; statusTypeIdList.contains(term.status.id)}
+log.info("Total terms remaining after status type filter - ${filteredTermList.size}")
+
+ 
+
+execution.setVariable("assetldList", utility.toIdList(filteredTermList))
+</script>
+    </scriptTask>
+    <subProcess id="recertifyEachAsset" name="Start Recertify Asset Workflow for Each Term">
+      <multiInstanceLoopCharacteristics isSequential="true" activiti:collection="readyForCertificationList" activiti:elementVariable="assetId"></multiInstanceLoopCharacteristics>
+      <startEvent id="startevent4" name="Start"></startEvent>
+      <endEvent id="endevent5" name="End"></endEvent>
+      <serviceTask id="startCertifyAsset" name="Start Certify Asset Workflow" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.StartWorkflowInstanceDelegate">
+        <extensionElements>
+          <activiti:field name="processId">
+            <activiti:expression>${recertifyAssetProcessId}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="resourceId">
+            <activiti:expression>${assetId}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="resourceType">
+            <activiti:string><![CDATA[TE]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="propertyKeyList">
+            <activiti:string><![CDATA[certifierRole,currentCertificationDate]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="propertyValueList">
+            <activiti:expression>${certifierRole},  ${currentCertificationDateReadable}</activiti:expression>
+          </activiti:field>
+        </extensionElements>
+      </serviceTask>
+      <sequenceFlow id="flow44" sourceRef="startevent4" targetRef="startCertifyAsset"></sequenceFlow>
+      <sequenceFlow id="flow45" sourceRef="startCertifyAsset" targetRef="endevent5"></sequenceFlow>
+    </subProcess>
+    <sequenceFlow id="flow46" sourceRef="recertifyEachAsset" targetRef="setVariablesStarted"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway7" name="Exclusive Gateway"></exclusiveGateway>
+    <serviceTask id="runNowVariableTrue" name="Set RunNow variable[true]" activiti:expression="${true}" activiti:resultVariableName="runNow"></serviceTask>
+    <endEvent id="endevent6" name="End"></endEvent>
+    <sequenceFlow id="flow47" name="cancel" sourceRef="exclusivegateway7" targetRef="endevent6">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${cancel}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow49" sourceRef="runNowVariableTrue" targetRef="initializeVariables"></sequenceFlow>
+    <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="recertificationScheduled" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDate>${nextCertificationDate}</timeDate>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow50" sourceRef="boundarytimer1" targetRef="cancelAssetRecertification"></sequenceFlow>
+    <scriptTask id="setVariablesStarted" name="Set Task Variables" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>execution.setVariable("taskTitle"		,recertficationStartedTaskName)
+execution.setVariable("taskDescription"			,recertificationStartedTaskDescription.replace("ASSET_COUNT",readyForCertificationList.size().toString()))
+execution.setVariable("taskDescriptionTwo"			, taskDescriptionDefault.replace("CYCLE_DATE", nextCertificationDateReadable))
+execution.setVariable("runNow"			,false)
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow54" sourceRef="setVariablesStarted" targetRef="recertificationScheduled"></sequenceFlow>
+    <scriptTask id="setVariablesComplete" name="Set Task Variables" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>execution.setVariable("taskTitle"		,recertficationCompletedTaskName)
+execution.setVariable("taskDescription"			,recertificationCompletedTaskDescription)
+execution.setVariable("taskDescriptionTwo"			, taskDescriptionDefault.replace("CYCLE_DATE", nextCertificationDateReadable))
+execution.setVariable("runNow"			,false)
+
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow56" sourceRef="setVariablesComplete" targetRef="recertificationScheduled"></sequenceFlow>
+    <scriptTask id="cancelAssetRecertification" name="Cancel any Recertify Asset Instances" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>import com.collibra.dgc.core.dto.workflow.ProcessInstance
+import com.collibra.dgc.core.model.representation.Term
+import com.collibra.dgc.core.model.representation.WorkflowDefinition
+
+long termCount = vocabularyComponent.getNumberOfTerms(item.id)
+List&lt;Term&gt; allTerms = vocabularyComponent.getTerms(item.id, 0, termCount.toInteger())
+
+
+WorkflowDefinition recertifyAssetWF = workflowComponent.getWorkflowDefinitionByProcessId(recertifyAssetProcessId)
+
+allTerms.each {term -&gt;
+	
+	List&lt;ProcessInstance&gt; recertifyAssetInstances = workflowComponent.getProcessInstancesByItem(term.id,recertifyAssetWF.id)
+	
+	recertifyAssetInstances.each {instance -&gt;
+		workflowComponent.cancelWorkflow(instance.id, "Recertification cancelled by ${users.current}")
+	}
+}
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow57" sourceRef="cancelAssetRecertification" targetRef="exclusivegateway7"></sequenceFlow>
+    <sequenceFlow id="flow58" name="run now" sourceRef="exclusivegateway7" targetRef="runNowVariableTrue">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${runNow}]]></conditionExpression>
+    </sequenceFlow>
+    <scriptTask id="updateTaskNameDescription" name="Update task name and description" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>execution.setVariable("taskTitle"		,initiateRecertficationTaskName)
+execution.setVariable("taskDescription"			, initiateRecertficationTaskDescription.replace("CYCLE_DATE", nextCertificationDateReadable))
+execution.setVariable("taskDescriptionTwo","")
+
+	def getISO8601Date={Date date-&gt;
+		TimeZone tz 		= TimeZone.getTimeZone("UTC")
+		DateFormat df		= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
+		df.setTimeZone		(tz)
+		String nowAsISO 	= df.format(date)
+		nowAsISO
+	}
+
+Calendar c = Calendar.getInstance(); 
+c.setTime(dt); 
+c.add(Calendar.DATE, 1);
+execution.setVariable("nextCertificationDate", getISO8601Date (c.getTime()))</script>
+    </scriptTask>
+    <sequenceFlow id="flow59" name="next cycle" sourceRef="exclusivegateway7" targetRef="updateTaskNameDescription">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!runNow && !cancel}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow60" sourceRef="updateTaskNameDescription" targetRef="recertificationScheduled"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_recertifyDomain">
+    <bpmndi:BPMNPlane bpmnElement="recertifyDomain" id="BPMNPlane_recertifyDomain">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="10.0" y="30.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="evaluateAssignedRoles" id="BPMNShape_evaluateAssignedRoles">
+        <omgdc:Bounds height="207.0" width="617.0" x="60.0" y="440.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent2" id="BPMNShape_startevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="70.0" y="480.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="574.0" y="573.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="getAsset" id="BPMNShape_getAsset">
+        <omgdc:Bounds height="55.0" width="105.0" x="120.0" y="470.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="certifierCount" id="BPMNShape_certifierCount">
+        <omgdc:Bounds height="55.0" width="160.0" x="240.0" y="470.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="addToNotReadyList" id="BPMNShape_addToNotReadyList">
+        <omgdc:Bounds height="57.0" width="123.0" x="530.0" y="469.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="addToReadyList" id="BPMNShape_addToReadyList">
+        <omgdc:Bounds height="55.0" width="153.0" x="378.0" y="563.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
+        <omgdc:Bounds height="40.0" width="40.0" x="434.0" y="477.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="setCertificationDate" id="BPMNShape_setCertificationDate">
+        <omgdc:Bounds height="55.0" width="161.0" x="290.0" y="116.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="initializeVariables" id="BPMNShape_initializeVariables">
+        <omgdc:Bounds height="55.0" width="160.0" x="291.0" y="20.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="350.0" y="343.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="348.0" y="701.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="missingRoleMember" id="BPMNShape_missingRoleMember">
+        <omgdc:Bounds height="63.0" width="175.0" x="30.0" y="690.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="97.0" y="820.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent4" id="BPMNShape_endevent4">
+        <omgdc:Bounds height="35.0" width="35.0" x="100.0" y="930.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway6" id="BPMNShape_exclusivegateway6">
+        <omgdc:Bounds height="40.0" width="40.0" x="350.0" y="194.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="recertificationScheduled" id="BPMNShape_recertificationScheduled">
+        <omgdc:Bounds height="55.0" width="141.0" x="744.0" y="187.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="createdFilteredAssetList" id="BPMNShape_createdFilteredAssetList">
+        <omgdc:Bounds height="60.0" width="211.0" x="265.0" y="254.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="recertifyEachAsset" id="BPMNShape_recertifyEachAsset">
+        <omgdc:Bounds height="95.0" width="296.0" x="221.0" y="793.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent4" id="BPMNShape_startevent4">
+        <omgdc:Bounds height="35.0" width="35.0" x="230.0" y="829.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent5" id="BPMNShape_endevent5">
+        <omgdc:Bounds height="35.0" width="35.0" x="457.0" y="829.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startCertifyAsset" id="BPMNShape_startCertifyAsset">
+        <omgdc:Bounds height="55.0" width="161.0" x="277.0" y="819.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway7" id="BPMNShape_exclusivegateway7">
+        <omgdc:Bounds height="40.0" width="40.0" x="946.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="runNowVariableTrue" id="BPMNShape_runNowVariableTrue">
+        <omgdc:Bounds height="55.0" width="144.0" x="743.0" y="20.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent6" id="BPMNShape_endevent6">
+        <omgdc:Bounds height="35.0" width="35.0" x="1002.0" y="113.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="840.0" y="225.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="setVariablesStarted" id="BPMNShape_setVariablesStarted">
+        <omgdc:Bounds height="55.0" width="105.0" x="676.0" y="813.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="setVariablesComplete" id="BPMNShape_setVariablesComplete">
+        <omgdc:Bounds height="55.0" width="105.0" x="676.0" y="694.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="cancelAssetRecertification" id="BPMNShape_cancelAssetRecertification">
+        <omgdc:Bounds height="57.0" width="108.0" x="913.0" y="186.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="updateTaskNameDescription" id="BPMNShape_updateTaskNameDescription">
+        <omgdc:Bounds height="55.0" width="143.0" x="743.0" y="103.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="45.0" y="47.0"></omgdi:waypoint>
+        <omgdi:waypoint x="291.0" y="47.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="105.0" y="497.0"></omgdi:waypoint>
+        <omgdi:waypoint x="120.0" y="497.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="531.0" y="590.0"></omgdi:waypoint>
+        <omgdi:waypoint x="574.0" y="590.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="225.0" y="497.0"></omgdi:waypoint>
+        <omgdi:waypoint x="240.0" y="497.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+        <omgdi:waypoint x="400.0" y="497.0"></omgdi:waypoint>
+        <omgdi:waypoint x="434.0" y="497.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+        <omgdi:waypoint x="591.0" y="526.0"></omgdi:waypoint>
+        <omgdi:waypoint x="591.0" y="573.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="454.0" y="517.0"></omgdi:waypoint>
+        <omgdi:waypoint x="454.0" y="563.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="76.0" x="438.0" y="980.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow19" id="BPMNEdge_flow19">
+        <omgdi:waypoint x="474.0" y="497.0"></omgdi:waypoint>
+        <omgdi:waypoint x="530.0" y="497.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="94.0" x="511.0" y="881.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="370.0" y="171.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="194.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="371.0" y="75.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="116.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
+        <omgdi:waypoint x="370.0" y="314.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="343.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
+        <omgdi:waypoint x="370.0" y="383.0"></omgdi:waypoint>
+        <omgdi:waypoint x="368.0" y="440.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="271.0" y="382.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
+        <omgdi:waypoint x="390.0" y="363.0"></omgdi:waypoint>
+        <omgdi:waypoint x="728.0" y="362.0"></omgdi:waypoint>
+        <omgdi:waypoint x="728.0" y="694.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="48.0" width="100.0" x="526.0" y="316.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+        <omgdi:waypoint x="368.0" y="647.0"></omgdi:waypoint>
+        <omgdi:waypoint x="368.0" y="701.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow26" id="BPMNEdge_flow26">
+        <omgdi:waypoint x="368.0" y="741.0"></omgdi:waypoint>
+        <omgdi:waypoint x="369.0" y="793.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="377.0" y="740.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow27" id="BPMNEdge_flow27">
+        <omgdi:waypoint x="348.0" y="721.0"></omgdi:waypoint>
+        <omgdi:waypoint x="205.0" y="721.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="244.0" y="690.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow28" id="BPMNEdge_flow28">
+        <omgdi:waypoint x="117.0" y="753.0"></omgdi:waypoint>
+        <omgdi:waypoint x="117.0" y="820.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow29" id="BPMNEdge_flow29">
+        <omgdi:waypoint x="137.0" y="840.0"></omgdi:waypoint>
+        <omgdi:waypoint x="221.0" y="840.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="133.0" y="801.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow30" id="BPMNEdge_flow30">
+        <omgdi:waypoint x="117.0" y="860.0"></omgdi:waypoint>
+        <omgdi:waypoint x="117.0" y="930.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="90.0" x="22.0" y="875.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow32" id="BPMNEdge_flow32">
+        <omgdi:waypoint x="370.0" y="234.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="254.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="39.0" x="320.0" y="233.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow33" id="BPMNEdge_flow33">
+        <omgdi:waypoint x="390.0" y="214.0"></omgdi:waypoint>
+        <omgdi:waypoint x="744.0" y="214.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="440.0" y="183.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow36" id="BPMNEdge_flow36">
+        <omgdi:waypoint x="97.0" y="840.0"></omgdi:waypoint>
+        <omgdi:waypoint x="8.0" y="839.0"></omgdi:waypoint>
+        <omgdi:waypoint x="8.0" y="363.0"></omgdi:waypoint>
+        <omgdi:waypoint x="8.0" y="83.0"></omgdi:waypoint>
+        <omgdi:waypoint x="371.0" y="75.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="36.0" width="100.0" x="18.0" y="814.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow37" id="BPMNEdge_flow37">
+        <omgdi:waypoint x="388.0" y="721.0"></omgdi:waypoint>
+        <omgdi:waypoint x="676.0" y="721.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="48.0" width="100.0" x="582.0" y="726.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow42" id="BPMNEdge_flow42">
+        <omgdi:waypoint x="885.0" y="214.0"></omgdi:waypoint>
+        <omgdi:waypoint x="913.0" y="214.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow44" id="BPMNEdge_flow44">
+        <omgdi:waypoint x="265.0" y="846.0"></omgdi:waypoint>
+        <omgdi:waypoint x="277.0" y="846.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow45" id="BPMNEdge_flow45">
+        <omgdi:waypoint x="438.0" y="846.0"></omgdi:waypoint>
+        <omgdi:waypoint x="457.0" y="846.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow46" id="BPMNEdge_flow46">
+        <omgdi:waypoint x="517.0" y="840.0"></omgdi:waypoint>
+        <omgdi:waypoint x="676.0" y="840.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
+        <omgdi:waypoint x="986.0" y="130.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1002.0" y="130.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="32.0" x="986.0" y="155.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
+        <omgdi:waypoint x="743.0" y="47.0"></omgdi:waypoint>
+        <omgdi:waypoint x="451.0" y="47.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
+        <omgdi:waypoint x="870.0" y="240.0"></omgdi:waypoint>
+        <omgdi:waypoint x="913.0" y="214.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow54" id="BPMNEdge_flow54">
+        <omgdi:waypoint x="781.0" y="840.0"></omgdi:waypoint>
+        <omgdi:waypoint x="817.0" y="841.0"></omgdi:waypoint>
+        <omgdi:waypoint x="814.0" y="242.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow56" id="BPMNEdge_flow56">
+        <omgdi:waypoint x="781.0" y="721.0"></omgdi:waypoint>
+        <omgdi:waypoint x="817.0" y="722.0"></omgdi:waypoint>
+        <omgdi:waypoint x="814.0" y="242.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow57" id="BPMNEdge_flow57">
+        <omgdi:waypoint x="967.0" y="186.0"></omgdi:waypoint>
+        <omgdi:waypoint x="966.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow58" id="BPMNEdge_flow58">
+        <omgdi:waypoint x="966.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="966.0" y="47.0"></omgdi:waypoint>
+        <omgdi:waypoint x="887.0" y="47.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="39.0" x="929.0" y="67.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow59" id="BPMNEdge_flow59">
+        <omgdi:waypoint x="946.0" y="130.0"></omgdi:waypoint>
+        <omgdi:waypoint x="886.0" y="130.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="12.0" width="50.0" x="896.0" y="113.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow60" id="BPMNEdge_flow60">
+        <omgdi:waypoint x="814.0" y="158.0"></omgdi:waypoint>
+        <omgdi:waypoint x="814.0" y="187.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
