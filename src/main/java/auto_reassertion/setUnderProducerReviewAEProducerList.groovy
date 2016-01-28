@@ -1,6 +1,8 @@
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT BEGIN******");
-loggerComponent.info("[[ LOGGING ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
-loggerComponent.info("[[ LOGGING ]] - ==========underProducerReviewAssertions=========="+underProducerReviewAssertions);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
+	loggerComponent.info("[[ LOGGING ]] - ==========underProducerReviewAssertions=========="+underProducerReviewAssertions);
+}
 
 def underProducerReviewAEProducer = "";
 def arrayAEProducer = [];
@@ -17,10 +19,14 @@ arrayAEProducer.each { men ->
         underProducerReviewAEProducer = underProducerReviewAEProducer + ",user(" + mem.user.getUserName() + ")";
       } else {
         underProducerReviewAEProducer = "user(" + mem.user.getUserName() + ")";
-      }     
-      loggerComponent.info ("[[ LOGGING ]] USER NAME OF AEProducer IS " + underProducerReviewAEProducer);
+      } 
+      if(debug){    
+	      loggerComponent.info ("[[ LOGGING ]] USER NAME OF AEProducer IS " + underProducerReviewAEProducer);
+	  }
 }
 execution.setVariable('underProducerReviewAEProducer', underProducerReviewAEProducer);
-loggerComponent.info("[[ LOGGING ]] - ==========underProducerReviewAEProducer=========="+underProducerReviewAEProducer);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========underProducerReviewAEProducer=========="+underProducerReviewAEProducer);
+}
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
 

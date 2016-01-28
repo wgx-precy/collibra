@@ -3,8 +3,10 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT BEGIN******");
-loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
-loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
+	loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
+}
 
 int year = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -13,7 +15,7 @@ List<Date> notificationDateList	= [];
 List<String> notificationDatStringList = utility.toList(dateInputs);
 notificationDatStringList.sort();
 
-notificationDatStringList.each {date ->
+notificationDatStringList.each { date ->
 	try{
 		validDate = new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(yearInput));
 		notificationDateList.add(validDate);
@@ -31,5 +33,7 @@ if(year.toString()>yearInput) {
 }
 
 execution.setVariable('notificationDateList', notificationDateList);
-loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
+}
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");
