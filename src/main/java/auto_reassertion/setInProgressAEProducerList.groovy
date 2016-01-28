@@ -1,18 +1,25 @@
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT BEGIN******");
 if(debug){
-  loggerComponent.info("[[ LOGGING ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
-  loggerComponent.info("[[ LOGGING ]] - ==========inProgressAssertions=========="+inProgressAssertions);
+  loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertions=========="+inProgressAssertions);
 }
 /*Notify AE Producer Use*/
 def inProgressAEProducer = "";
 def arrayAEProducer = [];
-/*get AE-Producer by DUA*/
-inProgressAssertions.each { duaPicked ->
-  rightsComponent.getMembersByResourceAndRole(duaPicked, UUID_Role_AEProducer).each { mem ->
+def inProgressAEProducerEmpty = false;
+/*get AE-Producer by assertion*/
+inProgressAssertions.each { assertionPicked ->
+  rightsComponent.getMembersByResourceAndRole(assertionPicked, UUID_Role_AEProducer).each { mem ->
     arrayAEProducer.add(mem);
   } 
 }
 arrayAEProducer.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========arrayAEProducer=========="+arrayAEProducer);
+}
+if(arrayAEProducer.size()==0){
+  inProgressAEProducerEmpty = true;
+}
 arrayAEProducer.each { men ->
   if (inProgressAEProducer != "") {
         inProgressAEProducer = inProgressAEProducer + ",user(" + mem.user.getUserName() + ")";
@@ -20,12 +27,14 @@ arrayAEProducer.each { men ->
         inProgressAEProducer = "user(" + mem.user.getUserName() + ")";
       }    
       if(debug){ 
-        loggerComponent.info ("[[ LOGGING ]] USER NAME OF AEProducer IS " + inProgressAEProducer);
+        loggerComponent.info ("[[ DEBUG ]] USER NAME OF AEProducer IS " + inProgressAEProducer);
       }
 }
 execution.setVariable('inProgressAEProducer', inProgressAEProducer);
+execution.setVariable('inProgressAEProducerEmpty', inProgressAEProducerEmpty);
 if(debug){
-  loggerComponent.info("[[ LOGGING ]] - ==========inProgressAEProducer=========="+inProgressAEProducer);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducer=========="+inProgressAEProducer);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducerEmpty=========="+inProgressAEProducerEmpty);
 }
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
 

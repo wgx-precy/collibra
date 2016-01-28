@@ -37,9 +37,11 @@
         <activiti:formProperty id="dateInputs" name="Target Dates(1/7,2/5,3/7)" type="string" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_status_InProgress" name="UUID STATUS IN PROGRESS" type="string" default="12345" readable="false" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_status_UnderProducerReview" name="UUID STATUS UNDER PRODUCER REVIEW" type="string" default="5678" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="duaVocabularyID" name="DUA VOCABULARY ID" type="string" default="dua uuid " readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="assertionVocabularyID" name="ASSERTION VOCABULARY ID" type="string" default="assertion uuid " readable="false" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_Role_AEProducer" name="UUID ROLE AE PRODUCER" type="string" default="9999" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_MDS" name="UUID ROLE MDS" type="string" default="8888" readable="false"></activiti:formProperty>
         <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_RelType_ProducerLOB" name="UUID RELTYPE PRODUCER LOB" type="string" readable="false"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <scriptTask id="setNextNotificationDate" name="set next notification date" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -93,9 +95,79 @@ execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
 </script>
     </scriptTask>
-    <scriptTask id="setInProgressAssertions" name="set &quot;in progress&quot; assertions" scriptFormat="groovy" activiti:autoStoreVariables="false"></scriptTask>
+    <scriptTask id="setInProgressAssertions" name="set &quot;in progress&quot; assertions" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS ASSERTION SCRIPT BEGIN******");
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_status_InProgress=========="+UUID_status_InProgress);
+	loggerComponent.info("[[ DEBUG ]] - ==========assertionVocabularyID=========="+assertionVocabularyID);
+}
+
+def inProgressAssertions = [];
+def count = 0;
+def inProgressAssertionsEmpty = false;
+vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion -&gt;
+  assertionId = assertion.getId();
+  if(assertion.getStatus().getId() == UUID_status_InProgress){   
+    if(debug){
+      loggerComponent.info("[[ DEBUG ]] - ========== assertion uuid ========== " + assertion.getId());
+    }
+   	inProgressAssertions.add(assertionId);
+    counter = counter + 1;
+  }
+}
+inProgressAssertions.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertions=========="+inProgressAssertions);
+}
+if(inProgressAssertions.size()==0){
+	inProgressAssertionsEmpty = true;
+}
+execution.setVariable('inProgressAssertions', inProgressAssertions);
+execution.setVariable('inProgressAssertionsEmpty', inProgressAssertionsEmpty);
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertions=========="+inProgressAssertions);
+	loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertionsEmpty=========="+inProgressAssertionsEmpty);
+}
+loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS ASSERTION SCRIPT END******");
+</script>
+    </scriptTask>
     <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
-    <scriptTask id="setUnderProducerReviewAssertions" name="set &quot;under producer review&quot; assertions" scriptFormat="groovy" activiti:autoStoreVariables="false"></scriptTask>
+    <scriptTask id="setUnderProducerReviewAssertions" name="set &quot;under producer review&quot; assertions" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET UNDER PRODUCER REVIEW ASSERTION SCRIPT BEGIN******");
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_status_UnderProducerReview=========="+UUID_status_UnderProducerReview);
+	loggerComponent.info("[[ DEBUG ]] - ==========assertionVocabularyID=========="+assertionVocabularyID);
+}
+
+def underProducerReviewAssertions = [];
+def count = 0;
+def underProducerReviewAssertionsEmpty = false;
+vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion -&gt;
+  assertionId = assertion.getId();
+  if(assertion.getStatus().getId() == UUID_status_UnderProducerReview){
+    if(debug){
+      loggerComponent.info("[[ DEBUG ]] - ========== assertion uuid ========== " + assertion.getId());
+    }
+   	underProducerReviewAssertions.add(assertionId);
+    counter = counter + 1;
+  }
+}
+underProducerReviewAssertions.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAssertions=========="+underProducerReviewAssertions);
+}
+if(underProducerReviewAssertions.size()==0){
+	underProducerReviewAssertionsEmpty = true;
+}
+execution.setVariable('underProducerReviewAssertions', underProducerReviewAssertions);
+execution.setVariable('underProducerReviewAssertionsEmpty', underProducerReviewAssertionsEmpty);
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAssertions=========="+underProducerReviewAssertions);
+	loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAssertionsEmpty=========="+underProducerReviewAssertionsEmpty);
+}
+loggerComponent.info("[[ LOGGING ]] - ********SET UNDER PRODUCER REVIEW ASSERTION SCRIPT END******");
+</script>
+    </scriptTask>
     <exclusiveGateway id="exclusivegateway3" name="Exclusive Gateway"></exclusiveGateway>
     <sequenceFlow id="flow7" name="empty" sourceRef="exclusivegateway2" targetRef="setUnderProducerReviewAssertions">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${inProgressAssertionsEmpty}]]></conditionExpression>
@@ -104,8 +176,92 @@ loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT 
     <sequenceFlow id="flow9" name="empty" sourceRef="exclusivegateway3" targetRef="setNextNotificationDate">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${underProducerReviewAssertionsEmpty}]]></conditionExpression>
     </sequenceFlow>
-    <scriptTask id="setAEProducerUnderProducerReview" name="set AE-Producer" scriptFormat="javascript" activiti:autoStoreVariables="false"></scriptTask>
-    <scriptTask id="setAEProducerInProgress" name="set AE Producer" activiti:autoStoreVariables="false"></scriptTask>
+    <scriptTask id="setAEProducerUnderProducerReview" name="set AE-Producer" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT BEGIN******");
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
+	loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAssertions=========="+underProducerReviewAssertions);
+}
+/*Notify AE Producer Use*/
+def underProducerReviewAEProducer = "";
+def arrayAEProducer = [];
+def underProducerReviewAEProducerEmpty = false;
+/*get AE-Producer by assertion*/
+underProducerReviewAssertions.each { assertionPicked -&gt;
+  rightsComponent.getMembersByResourceAndRole(assertionPicked, UUID_Role_AEProducer).each { mem -&gt;
+    arrayAEProducer.add(mem);
+  } 
+}
+arrayAEProducer.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========arrayAEProducer=========="+arrayAEProducer);
+}
+if(arrayAEProducer.size()==0){
+	underProducerReviewAEProducerEmpty = true;
+}
+arrayAEProducer.each { men -&gt;
+  if (underProducerReviewAEProducer != "") {
+        underProducerReviewAEProducer = underProducerReviewAEProducer + ",user(" + mem.user.getUserName() + ")";
+      } else {
+        underProducerReviewAEProducer = "user(" + mem.user.getUserName() + ")";
+      } 
+      if(debug){    
+	      loggerComponent.info ("[[ DEBUG ]] USER NAME OF AEProducer IS " + underProducerReviewAEProducer);
+	  }
+}
+execution.setVariable('underProducerReviewAEProducer', underProducerReviewAEProducer);
+execution.setVariable('underProducerReviewAEProducerEmpty', underProducerReviewAEProducerEmpty);
+if(debug){
+	loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAEProducer=========="+underProducerReviewAEProducer);
+	loggerComponent.info("[[ DEBUG ]] - ==========underProducerReviewAEProducerEmpty=========="+underProducerReviewAEProducerEmpty);
+}
+loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
+
+</script>
+    </scriptTask>
+    <scriptTask id="setAEProducerInProgress" name="set AE Producer" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT BEGIN******");
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_AEProducer=========="+UUID_Role_AEProducer);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertions=========="+inProgressAssertions);
+}
+/*Notify AE Producer Use*/
+def inProgressAEProducer = "";
+def arrayAEProducer = [];
+def inProgressAEProducerEmpty = false;
+/*get AE-Producer by assertion*/
+inProgressAssertions.each { assertionPicked -&gt;
+  rightsComponent.getMembersByResourceAndRole(assertionPicked, UUID_Role_AEProducer).each { mem -&gt;
+    arrayAEProducer.add(mem);
+  } 
+}
+arrayAEProducer.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========arrayAEProducer=========="+arrayAEProducer);
+}
+if(arrayAEProducer.size()==0){
+  inProgressAEProducerEmpty = true;
+}
+arrayAEProducer.each { men -&gt;
+  if (inProgressAEProducer != "") {
+        inProgressAEProducer = inProgressAEProducer + ",user(" + mem.user.getUserName() + ")";
+      } else {
+        inProgressAEProducer = "user(" + mem.user.getUserName() + ")";
+      }    
+      if(debug){ 
+        loggerComponent.info ("[[ DEBUG ]] USER NAME OF AEProducer IS " + inProgressAEProducer);
+      }
+}
+execution.setVariable('inProgressAEProducer', inProgressAEProducer);
+execution.setVariable('inProgressAEProducerEmpty', inProgressAEProducerEmpty);
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducer=========="+inProgressAEProducer);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducerEmpty=========="+inProgressAEProducerEmpty);
+}
+loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
+
+</script>
+    </scriptTask>
     <exclusiveGateway id="exclusivegateway4" name="Exclusive Gateway"></exclusiveGateway>
     <serviceTask id="notifyAEProducerUnderProducerReivew" name="notify AE-Producer"></serviceTask>
     <serviceTask id="notifyMDS" name="notify MDS"></serviceTask>
@@ -113,7 +269,9 @@ loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT 
     <sequenceFlow id="flow10" name="not empty" sourceRef="exclusivegateway2" targetRef="setAEProducerInProgress">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!inProgressAssertionsEmpty}]]></conditionExpression>
     </sequenceFlow>
-    <sequenceFlow id="flow12" name="not empty" sourceRef="exclusivegateway4" targetRef="notifyAEProducerInProgress"></sequenceFlow>
+    <sequenceFlow id="flow12" name="not empty" sourceRef="exclusivegateway4" targetRef="notifyAEProducerInProgress">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!inProgressAEProducerEmpty}]]></conditionExpression>
+    </sequenceFlow>
     <sequenceFlow id="flow16" name="not empty" sourceRef="exclusivegateway3" targetRef="setAEProducerUnderProducerReview">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!underProducerReviewAssertionsEmpty}]]></conditionExpression>
     </sequenceFlow>
@@ -167,7 +325,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
     </userTask>
     <sequenceFlow id="flow38" sourceRef="cancelTask" targetRef="endevent1"></sequenceFlow>
     <sequenceFlow id="flow39" name="empty" sourceRef="exclusivegateway5" targetRef="setNextNotificationDate">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${AEProducerEmpty}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${underProducerReviewAEProducerEmpty}]]></conditionExpression>
     </sequenceFlow>
     <intermediateCatchEvent id="timerintermediatecatchevent1" name="TimerCatchEvent">
       <timerEventDefinition>
@@ -177,16 +335,61 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
     <sequenceFlow id="flow34" sourceRef="timerintermediatecatchevent1" targetRef="exclusivegateway6"></sequenceFlow>
     <sequenceFlow id="flow41" sourceRef="setNextNotificationDate" targetRef="cancelTask"></sequenceFlow>
     <sequenceFlow id="flow42" name="not empty" sourceRef="exclusivegateway5" targetRef="notifyAEProducerUnderProducerReivew">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!AEProducerEmpty}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!underProducerReviewAEProducerEmpty}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="flow43" sourceRef="notifyAEProducerUnderProducerReivew" targetRef="setNextNotificationDate"></sequenceFlow>
-    <scriptTask id="setMDS" name="set MDS" activiti:autoStoreVariables="false"></scriptTask>
-    <sequenceFlow id="flow44" name="empty" sourceRef="exclusivegateway4" targetRef="setMDS"></sequenceFlow>
+    <scriptTask id="setMDS" name="set MDS" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST SCRIPT BEGIN******");
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_MDS=========="+UUID_Role_MDS);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressAssertions=========="+inProgressAssertions);
+}
+/*Notify AE Producer Use*/
+def inProgressProducerMDS = "";
+def arrayMDS = [];
+def inProgressProducerMDSEmpty = false;
+/*get AE-Producer by assertion*/
+inProgressAssertions.each { assertionPicked -&gt;
+  rightsComponent.getMembersByResourceAndRole(assertionPicked, UUID_Role_MDS).each { mem -&gt;
+    arrayMDS.add(mem)
+  }
+}
+arrayMDS.unique();
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========arrayMDS=========="+arrayMDS);
+}
+if(arrayMDS.size()==0){
+  inProgressProducerMDSEmpty = true;
+}
+arrayMDS.each { men -&gt;
+  if (inProgressProducerMDS != "") {
+      inProgressProducerMDS = inProgressProducerMDS + ",user(" + mem.user.getUserName() + ")"  
+    } else {
+      inProgressProducerMDS = "user(" + mem.user.getUserName() + ")" 
+  }
+}
+execution.setVariable('inProgressProducerMDS', inProgressProducerMDS);
+execution.setVariable('inProgressProducerMDSEmpty', inProgressProducerMDSEmpty);
+if(debug){
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressProducerMDS=========="+inProgressProducerMDS);
+  loggerComponent.info("[[ DEBUG ]] - ==========inProgressProducerMDSEmpty=========="+inProgressProducerMDSEmpty);
+}
+loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST SCRIPT END******");
+
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow44" name="empty" sourceRef="exclusivegateway4" targetRef="setMDS">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${inProgressAEProducerEmpty}]]></conditionExpression>
+    </sequenceFlow>
     <sequenceFlow id="flow45" sourceRef="notifyAEProducerInProgress" targetRef="setMDS"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway7" name="Exclusive Gateway"></exclusiveGateway>
     <sequenceFlow id="flow46" sourceRef="setMDS" targetRef="exclusivegateway7"></sequenceFlow>
-    <sequenceFlow id="flow47" name="not empty" sourceRef="exclusivegateway7" targetRef="notifyMDS"></sequenceFlow>
-    <sequenceFlow id="flow48" name="empty" sourceRef="exclusivegateway7" targetRef="setUnderProducerReviewAssertions"></sequenceFlow>
+    <sequenceFlow id="flow47" name="not empty" sourceRef="exclusivegateway7" targetRef="notifyMDS">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!inProgressProducerMDSEmpty}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow48" name="empty" sourceRef="exclusivegateway7" targetRef="setUnderProducerReviewAssertions">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${inProgressProducerMDSEmpty}]]></conditionExpression>
+    </sequenceFlow>
     <sequenceFlow id="flow49" sourceRef="notifyMDS" targetRef="setUnderProducerReviewAssertions"></sequenceFlow>
     <sequenceFlow id="flow50" sourceRef="setAEProducerInProgress" targetRef="exclusivegateway4"></sequenceFlow>
   </process>
@@ -199,19 +402,19 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdc:Bounds height="421.0" width="1011.0" x="40.0" y="40.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="50.0" y="80.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="80.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setNextNotificationDate" id="BPMNShape_setNextNotificationDate">
         <omgdc:Bounds height="55.0" width="121.0" x="320.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setInProgressAssertions" id="BPMNShape_setInProgressAssertions">
-        <omgdc:Bounds height="55.0" width="141.0" x="50.0" y="233.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="141.0" x="60.0" y="233.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
-        <omgdc:Bounds height="40.0" width="40.0" x="202.0" y="240.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="222.0" y="240.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setUnderProducerReviewAssertions" id="BPMNShape_setUnderProducerReviewAssertions">
-        <omgdc:Bounds height="55.0" width="155.0" x="620.0" y="233.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="155.0" x="628.0" y="233.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
         <omgdc:Bounds height="40.0" width="40.0" x="814.0" y="240.0"></omgdc:Bounds>
@@ -220,19 +423,19 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdc:Bounds height="55.0" width="105.0" x="782.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setAEProducerInProgress" id="BPMNShape_setAEProducerInProgress">
-        <omgdc:Bounds height="55.0" width="105.0" x="170.0" y="310.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="190.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
-        <omgdc:Bounds height="40.0" width="40.0" x="306.0" y="317.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="330.0" y="317.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="notifyAEProducerUnderProducerReivew" id="BPMNShape_notifyAEProducerUnderProducerReivew">
         <omgdc:Bounds height="55.0" width="105.0" x="890.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="notifyMDS" id="BPMNShape_notifyMDS">
-        <omgdc:Bounds height="55.0" width="105.0" x="562.0" y="380.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="580.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="notifyAEProducerInProgress" id="BPMNShape_notifyAEProducerInProgress">
-        <omgdc:Bounds height="55.0" width="105.0" x="274.0" y="380.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="298.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
         <omgdc:Bounds height="40.0" width="40.0" x="922.0" y="317.0"></omgdc:Bounds>
@@ -253,20 +456,20 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdc:Bounds height="35.0" width="35.0" x="535.0" y="114.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setMDS" id="BPMNShape_setMDS">
-        <omgdc:Bounds height="55.0" width="105.0" x="390.0" y="310.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="410.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway7" id="BPMNShape_exclusivegateway7">
-        <omgdc:Bounds height="40.0" width="40.0" x="522.0" y="317.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="532.0" y="317.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
-        <omgdi:waypoint x="242.0" y="260.0"></omgdi:waypoint>
-        <omgdi:waypoint x="620.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="262.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="628.0" y="260.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="29.0" x="242.0" y="238.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="29.0" x="262.0" y="238.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
-        <omgdi:waypoint x="775.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="783.0" y="260.0"></omgdi:waypoint>
         <omgdi:waypoint x="814.0" y="260.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
@@ -279,17 +482,17 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
-        <omgdi:waypoint x="222.0" y="280.0"></omgdi:waypoint>
-        <omgdi:waypoint x="222.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="242.0" y="280.0"></omgdi:waypoint>
+        <omgdi:waypoint x="242.0" y="310.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="47.0" x="215.0" y="287.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="47.0" x="235.0" y="287.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
-        <omgdi:waypoint x="326.0" y="357.0"></omgdi:waypoint>
-        <omgdi:waypoint x="326.0" y="380.0"></omgdi:waypoint>
+        <omgdi:waypoint x="350.0" y="357.0"></omgdi:waypoint>
+        <omgdi:waypoint x="350.0" y="380.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="47.0" x="328.0" y="357.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="352.0" y="357.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
@@ -304,7 +507,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdi:waypoint x="922.0" y="337.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
-        <omgdi:waypoint x="85.0" y="97.0"></omgdi:waypoint>
+        <omgdi:waypoint x="95.0" y="97.0"></omgdi:waypoint>
         <omgdi:waypoint x="170.0" y="97.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow27" id="BPMNEdge_flow27">
@@ -312,13 +515,13 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdi:waypoint x="320.0" y="97.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow31" id="BPMNEdge_flow31">
-        <omgdi:waypoint x="191.0" y="260.0"></omgdi:waypoint>
-        <omgdi:waypoint x="202.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="201.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="222.0" y="260.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow35" id="BPMNEdge_flow35">
         <omgdi:waypoint x="532.0" y="187.0"></omgdi:waypoint>
-        <omgdi:waypoint x="120.0" y="184.0"></omgdi:waypoint>
-        <omgdi:waypoint x="120.0" y="233.0"></omgdi:waypoint>
+        <omgdi:waypoint x="130.0" y="186.0"></omgdi:waypoint>
+        <omgdi:waypoint x="130.0" y="233.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="71.0" x="431.0" y="165.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
@@ -341,7 +544,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdi:waypoint x="382.0" y="45.0"></omgdi:waypoint>
         <omgdi:waypoint x="380.0" y="70.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="29.0" x="949.0" y="288.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="949.0" y="288.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
@@ -356,7 +559,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdi:waypoint x="942.0" y="357.0"></omgdi:waypoint>
         <omgdi:waypoint x="942.0" y="380.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="47.0" x="942.0" y="357.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="942.0" y="357.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow43" id="BPMNEdge_flow43">
@@ -367,45 +570,45 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
         <omgdi:waypoint x="380.0" y="70.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow44" id="BPMNEdge_flow44">
-        <omgdi:waypoint x="346.0" y="337.0"></omgdi:waypoint>
-        <omgdi:waypoint x="390.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="410.0" y="337.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="29.0" x="351.0" y="316.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="375.0" y="316.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow45" id="BPMNEdge_flow45">
-        <omgdi:waypoint x="379.0" y="407.0"></omgdi:waypoint>
-        <omgdi:waypoint x="442.0" y="405.0"></omgdi:waypoint>
-        <omgdi:waypoint x="442.0" y="365.0"></omgdi:waypoint>
+        <omgdi:waypoint x="403.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="462.0" y="406.0"></omgdi:waypoint>
+        <omgdi:waypoint x="462.0" y="365.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow46" id="BPMNEdge_flow46">
-        <omgdi:waypoint x="495.0" y="337.0"></omgdi:waypoint>
-        <omgdi:waypoint x="522.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="515.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="532.0" y="337.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
-        <omgdi:waypoint x="542.0" y="357.0"></omgdi:waypoint>
-        <omgdi:waypoint x="541.0" y="406.0"></omgdi:waypoint>
-        <omgdi:waypoint x="562.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="357.0"></omgdi:waypoint>
+        <omgdi:waypoint x="551.0" y="406.0"></omgdi:waypoint>
+        <omgdi:waypoint x="580.0" y="407.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="47.0" x="542.0" y="357.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="552.0" y="357.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow48" id="BPMNEdge_flow48">
-        <omgdi:waypoint x="542.0" y="317.0"></omgdi:waypoint>
-        <omgdi:waypoint x="540.0" y="260.0"></omgdi:waypoint>
-        <omgdi:waypoint x="620.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="317.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="628.0" y="260.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="29.0" x="530.0" y="297.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="100.0" x="540.0" y="297.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
-        <omgdi:waypoint x="667.0" y="407.0"></omgdi:waypoint>
-        <omgdi:waypoint x="697.0" y="407.0"></omgdi:waypoint>
-        <omgdi:waypoint x="697.0" y="288.0"></omgdi:waypoint>
+        <omgdi:waypoint x="685.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="705.0" y="406.0"></omgdi:waypoint>
+        <omgdi:waypoint x="705.0" y="288.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
-        <omgdi:waypoint x="275.0" y="337.0"></omgdi:waypoint>
-        <omgdi:waypoint x="306.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="295.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="330.0" y="337.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

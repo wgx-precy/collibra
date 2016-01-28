@@ -47,16 +47,20 @@ notificationDatStringList.each { date -&gt;
 	try{
 		validDate = new SimpleDateFormat('MM/dd/yyyy HH:mm:ss').parse(date.concat('/').concat(yearInput).concat(' 9:00:00'));
 		notificationDateList.add(validDate);
-	}catch(java.text.ParseException e){
-		dgcError = new DGCException("${date} - Dates must be in MM/DD format");
+	}catch(all){
+		dgcError = new DGCException("Dates must be in MM/DD format");
+		loggerComponent.info("[[ LOGGING ]] - ==========after dgcError==========");
 		dgcError.setTitleCode ("Unparseable Date");
+		loggerComponent.info("[[ LOGGING ]] - ==========after dettitle code==========");
 		throw dgcError
 	}
 }
 /*Target year validation*/
 if(year.toString()&gt;yearInput) {
-	dgcError = new DGCException("${yearInput} - Dates must be equal or larger than ${year}");
+	dgcError = new DGCException("Dates must be equal or larger than");
+	loggerComponent.info("[[ LOGGING ]] - ==========after dgcError==========");
 	dgcError.setTitleCode ("Invalid target year");
+	loggerComponent.info("[[ LOGGING ]] - ==========after dettitle code==========");
 	throw dgcError;
 }
 
@@ -66,7 +70,7 @@ if(debug){
 }
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");</script>
     </scriptTask>
-    <userTask id="userForm" name="user form" activiti:candidateUsers="user(${startUser})">
+    <userTask id="userForm" name="Next trigger day is ${nextNotificationDate}" activiti:candidateUsers="user(${startUser})">
       <extensionElements>
         <activiti:formProperty id="cancel" name="Cancel Task" type="button" default="false"></activiti:formProperty>
       </extensionElements>
