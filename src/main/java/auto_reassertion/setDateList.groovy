@@ -15,9 +15,10 @@ List<Date> notificationDateList	= [];
 List<String> notificationDatStringList = utility.toList(dateInputs);
 notificationDatStringList.sort();
 
+/*Date list validation*/
 notificationDatStringList.each { date ->
 	try{
-		validDate = new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(yearInput));
+		validDate = new SimpleDateFormat('MM/dd/yyyy HH:mm:ss').parse(date.concat('/').concat(yearInput).concat(' 9:00:00'));
 		notificationDateList.add(validDate);
 	}catch(java.text.ParseException e){
 		dgcError = new DGCException("${date} - Dates must be in MM/DD format");
@@ -25,7 +26,7 @@ notificationDatStringList.each { date ->
 		throw dgcError
 	}
 }
-
+/*Target year validation*/
 if(year.toString()>yearInput) {
 	dgcError = new DGCException("${yearInput} - Dates must be equal or larger than ${year}");
 	dgcError.setTitleCode ("Invalid target year");

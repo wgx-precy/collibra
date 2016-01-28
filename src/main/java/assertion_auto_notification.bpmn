@@ -20,7 +20,6 @@
         <flowNodeRef>timerintermediatecatchevent1</flowNodeRef>
         <flowNodeRef>setDateTimeList</flowNodeRef>
         <flowNodeRef>scripttask1</flowNodeRef>
-        <flowNodeRef>get MDS</flowNodeRef>
         <flowNodeRef>exclusivegateway7</flowNodeRef>
         <flowNodeRef>notifyAEProducerUnderProducerReivew</flowNodeRef>
         <flowNodeRef>notifyAEProducerInProgress</flowNodeRef>
@@ -29,6 +28,7 @@
         <flowNodeRef>setUnderProducerReviewAssertions</flowNodeRef>
         <flowNodeRef>setAEProducerInProgress</flowNodeRef>
         <flowNodeRef>setAEProducerUnderProducerReview</flowNodeRef>
+        <flowNodeRef>setMDS</flowNodeRef>
       </lane>
     </laneSet>
     <startEvent id="startevent1" name="Create Assertion Auto-notification">
@@ -180,11 +180,11 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!AEProducerEmpty}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="flow43" sourceRef="notifyAEProducerUnderProducerReivew" targetRef="setNextNotificationDate"></sequenceFlow>
-    <scriptTask id="get MDS" name="getMDS" activiti:autoStoreVariables="false"></scriptTask>
-    <sequenceFlow id="flow44" name="empty" sourceRef="exclusivegateway4" targetRef="get MDS"></sequenceFlow>
-    <sequenceFlow id="flow45" sourceRef="notifyAEProducerInProgress" targetRef="get MDS"></sequenceFlow>
+    <scriptTask id="setMDS" name="set MDS" activiti:autoStoreVariables="false"></scriptTask>
+    <sequenceFlow id="flow44" name="empty" sourceRef="exclusivegateway4" targetRef="setMDS"></sequenceFlow>
+    <sequenceFlow id="flow45" sourceRef="notifyAEProducerInProgress" targetRef="setMDS"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway7" name="Exclusive Gateway"></exclusiveGateway>
-    <sequenceFlow id="flow46" sourceRef="get MDS" targetRef="exclusivegateway7"></sequenceFlow>
+    <sequenceFlow id="flow46" sourceRef="setMDS" targetRef="exclusivegateway7"></sequenceFlow>
     <sequenceFlow id="flow47" name="not empty" sourceRef="exclusivegateway7" targetRef="notifyMDS"></sequenceFlow>
     <sequenceFlow id="flow48" name="empty" sourceRef="exclusivegateway7" targetRef="setUnderProducerReviewAssertions"></sequenceFlow>
     <sequenceFlow id="flow49" sourceRef="notifyMDS" targetRef="setUnderProducerReviewAssertions"></sequenceFlow>
@@ -252,7 +252,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
       <bpmndi:BPMNShape bpmnElement="timerintermediatecatchevent1" id="BPMNShape_timerintermediatecatchevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="535.0" y="114.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="get MDS" id="BPMNShape_get MDS">
+      <bpmndi:BPMNShape bpmnElement="setMDS" id="BPMNShape_setMDS">
         <omgdc:Bounds height="55.0" width="105.0" x="390.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway7" id="BPMNShape_exclusivegateway7">

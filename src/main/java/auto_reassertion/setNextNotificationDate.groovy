@@ -4,7 +4,7 @@ import groovy.time.TimeCategory
 
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT BEGIN******");
 
-// task terminate flag, set to true to end task if no more notifiy date in notification date list
+/*task terminate flag, true to end task if no more notifiy date in notification date list*/
 def taskTerminate = false;
 
 Date currentDate =  new Date();
@@ -46,7 +46,7 @@ use( TimeCategory ) {
 String nextNotificationDate = getISO8601Date(currentDate);
 if(debug){
 	loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
-	execution.setVariable('nextCertificationDate', nextNotificationDate);
-	execution.setVariable('taskTerminate', taskTerminate);
 }
+execution.setVariable('nextNotificationDate', nextNotificationDate);
+execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
