@@ -36,5 +36,6 @@ if(debug){
   loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducer=========="+inProgressAEProducer);
   loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducerEmpty=========="+inProgressAEProducerEmpty);
 }
+
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
 
