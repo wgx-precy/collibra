@@ -8,10 +8,10 @@ vocabularyComponent.getTerms(duaVocabularyID,0,0).each{ dua ->
   duaId = dua.getId();
   if(dua.getStatus().getId() == UUID_status_InProgress){   
     //if(debug){
-      loggerComponent.info("[[ LOGGING ]] - ========== DUAuuid ========== " + dua.getId())
+      loggerComponent.info("[[ LOGGING ]] - ========== DUAuuid ========== " + dua.getId());
     //}
    	inProgressAssertions.add(dua.getId());
-    counter = counter + 1
+    counter = counter + 1;
   }
 }
 inProgressAssertions.unique();

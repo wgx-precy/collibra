@@ -9,10 +9,10 @@ vocabularyComponent.getTerms(duaVocabularyID,0,0).each{ dua ->
   if(dua.getStatus().getId() == UUID_status_UnderProducerReview){
     
     //if(debug){
-      loggerComponent.info("[[ LOGGING ]] - ========== DUAuuid ========== " + dua.getId())
+      loggerComponent.info("[[ LOGGING ]] - ========== DUAuuid ========== " + dua.getId());
     //}
    	underProducerReviewAssertions.add(dua.getId());
-    counter = counter + 1   
+    counter = counter + 1;
   }
 }
 underProducerReviewAssertions.unique();
