@@ -35,6 +35,9 @@
       <extensionElements>
         <activiti:formProperty id="yearInput" name="Target Year" type="string" required="true"></activiti:formProperty>
         <activiti:formProperty id="dateInputs" name="Target Dates(1/7,2/5,3/7)" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_status_InProgress" name="UUID STATUS IN PROGRESS" type="string" default="12345" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_status_UnderProducerReview" name="UUID STATUS UNDER PRODUCER REVIEW" type="string" default="5678" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="duaVocabularyID" name="DUA VOCABULARY ID" type="string" default="dua uuid " readable="false" required="true"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <scriptTask id="setNextNotifyDate" name="set next notify date" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -379,7 +382,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
         <omgdi:waypoint x="542.0" y="357.0"></omgdi:waypoint>
-        <omgdi:waypoint x="536.0" y="405.0"></omgdi:waypoint>
+        <omgdi:waypoint x="541.0" y="406.0"></omgdi:waypoint>
         <omgdi:waypoint x="562.0" y="407.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="47.0" x="542.0" y="357.0"></omgdc:Bounds>

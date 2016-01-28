@@ -15,7 +15,7 @@ notificationDatStringList.sort()
 
 notificationDatStringList.each {date ->
 	try{
-		validDate = new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(year.toString()))
+		validDate = new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(yearInput))
 		notificationDateList.add(validDate)
 	}catch(java.text.ParseException e){
 		dgcError = new DGCException("${date} - Dates must be in MM/DD format")
