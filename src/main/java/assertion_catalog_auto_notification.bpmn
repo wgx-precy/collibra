@@ -9,39 +9,35 @@
         <flowNodeRef>startevent1</flowNodeRef>
         <flowNodeRef>exclusivegateway2</flowNodeRef>
         <flowNodeRef>exclusivegateway3</flowNodeRef>
-        <flowNodeRef>scripttask2</flowNodeRef>
         <flowNodeRef>exclusivegateway4</flowNodeRef>
         <flowNodeRef>exclusivegateway5</flowNodeRef>
-        <flowNodeRef>notifyMDS</flowNodeRef>
         <flowNodeRef>exclusivegateway6</flowNodeRef>
         <flowNodeRef>endevent1</flowNodeRef>
-        <flowNodeRef>usertask1</flowNodeRef>
         <flowNodeRef>cancelTask</flowNodeRef>
-        <flowNodeRef>timerintermediatecatchevent1</flowNodeRef>
         <flowNodeRef>setDateTimeList</flowNodeRef>
-        <flowNodeRef>scripttask1</flowNodeRef>
         <flowNodeRef>exclusivegateway7</flowNodeRef>
-        <flowNodeRef>notifyAEProducerUnderProducerReivew</flowNodeRef>
-        <flowNodeRef>notifyAEProducerInProgress</flowNodeRef>
         <flowNodeRef>setNextNotificationDate</flowNodeRef>
         <flowNodeRef>setInProgressAssertions</flowNodeRef>
         <flowNodeRef>setUnderProducerReviewAssertions</flowNodeRef>
         <flowNodeRef>setAEProducerInProgress</flowNodeRef>
         <flowNodeRef>setAEProducerUnderProducerReview</flowNodeRef>
         <flowNodeRef>setMDS</flowNodeRef>
+        <flowNodeRef>boundarytimer1</flowNodeRef>
+        <flowNodeRef>notifyAEProducerInProgress</flowNodeRef>
+        <flowNodeRef>notifyMDS</flowNodeRef>
+        <flowNodeRef>notifyAEProducerUnderProducerReivew</flowNodeRef>
       </lane>
     </laneSet>
     <startEvent id="startevent1" name="Create Assertion Auto-notification">
       <extensionElements>
-        <activiti:formProperty id="yearInput" name="Target Year" type="string" required="true"></activiti:formProperty>
-        <activiti:formProperty id="dateInputs" name="Target Dates(1/7,2/5,3/7)" type="string" required="true"></activiti:formProperty>
-        <activiti:formProperty id="UUID_status_InProgress" name="UUID STATUS IN PROGRESS" type="string" default="12345" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="UUID_status_UnderProducerReview" name="UUID STATUS UNDER PRODUCER REVIEW" type="string" default="5678" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="assertionVocabularyID" name="ASSERTION VOCABULARY ID" type="string" default="assertion uuid " readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="UUID_Role_AEProducer" name="UUID ROLE AE PRODUCER" type="string" default="9999" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="UUID_Role_MDS" name="UUID ROLE MDS" type="string" default="8888" readable="false"></activiti:formProperty>
+        <activiti:formProperty id="yearInput" name="Target Year" type="string" default="2016" required="true"></activiti:formProperty>
+        <activiti:formProperty id="dateInputs" name="Target Dates(1/7,2/5,3/7)" type="string" default="1/29,1/30" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_status_InProgress" name="UUID STATUS IN PROGRESS" type="string" default="00000000-0000-0000-0000-000000005019" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_status_UnderProducerReview" name="UUID STATUS UNDER PRODUCER REVIEW" type="string" default="7868232e-6af6-4e4a-b6b9-4e9ee0bdd223" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="assertionVocabularyID" name="ASSERTION VOCABULARY ID" type="string" default="3a38699d-c93a-44af-8664-388e0f9e5db4" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_AEProducer" name="UUID ROLE AE PRODUCER" type="string" default="530ebe97-0ce9-4b5c-b242-7678c06e9c65" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="UUID_Role_MDS" name="UUID ROLE MDS" type="string" default="c9be2c5f-d61c-4c50-a038-3f9ff9dac2a9" readable="false"></activiti:formProperty>
         <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="UUID_RelType_ProducerLOB" name="UUID RELTYPE PRODUCER LOB" type="string" readable="false"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <scriptTask id="setNextNotificationDate" name="set next notification date" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -263,9 +259,6 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
 </script>
     </scriptTask>
     <exclusiveGateway id="exclusivegateway4" name="Exclusive Gateway"></exclusiveGateway>
-    <serviceTask id="notifyAEProducerUnderProducerReivew" name="notify AE-Producer"></serviceTask>
-    <serviceTask id="notifyMDS" name="notify MDS"></serviceTask>
-    <serviceTask id="notifyAEProducerInProgress" name="notify AE-Producer"></serviceTask>
     <sequenceFlow id="flow10" name="not empty" sourceRef="exclusivegateway2" targetRef="setAEProducerInProgress">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!inProgressAssertionsEmpty}]]></conditionExpression>
     </sequenceFlow>
@@ -327,12 +320,6 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
     <sequenceFlow id="flow39" name="empty" sourceRef="exclusivegateway5" targetRef="setNextNotificationDate">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${underProducerReviewAEProducerEmpty}]]></conditionExpression>
     </sequenceFlow>
-    <intermediateCatchEvent id="timerintermediatecatchevent1" name="TimerCatchEvent">
-      <timerEventDefinition>
-        <timeDate>${nextNotificationDate}</timeDate>
-      </timerEventDefinition>
-    </intermediateCatchEvent>
-    <sequenceFlow id="flow34" sourceRef="timerintermediatecatchevent1" targetRef="exclusivegateway6"></sequenceFlow>
     <sequenceFlow id="flow41" sourceRef="setNextNotificationDate" targetRef="cancelTask"></sequenceFlow>
     <sequenceFlow id="flow42" name="not empty" sourceRef="exclusivegateway5" targetRef="notifyAEProducerUnderProducerReivew">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!underProducerReviewAEProducerEmpty}]]></conditionExpression>
@@ -392,6 +379,21 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
     </sequenceFlow>
     <sequenceFlow id="flow49" sourceRef="notifyMDS" targetRef="setUnderProducerReviewAssertions"></sequenceFlow>
     <sequenceFlow id="flow50" sourceRef="setAEProducerInProgress" targetRef="exclusivegateway4"></sequenceFlow>
+    <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="cancelTask" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDate>${nextNotificationDate}</timeDate>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow51" sourceRef="boundarytimer1" targetRef="exclusivegateway6"></sequenceFlow>
+    <scriptTask id="notifyAEProducerInProgress" name="notify AE-Producer" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********NOTIFY AE PRODUCER******");</script>
+    </scriptTask>
+    <scriptTask id="notifyMDS" name="notify MDS" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********NOTIFY MDS******");</script>
+    </scriptTask>
+    <scriptTask id="notifyAEProducerUnderProducerReivew" name="notify AE-Producer" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>loggerComponent.info("[[ LOGGING ]] - ********NOTIFY AE PRODUCER******");</script>
+    </scriptTask>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
     <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
@@ -428,15 +430,6 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
       <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
         <omgdc:Bounds height="40.0" width="40.0" x="330.0" y="317.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="notifyAEProducerUnderProducerReivew" id="BPMNShape_notifyAEProducerUnderProducerReivew">
-        <omgdc:Bounds height="55.0" width="105.0" x="890.0" y="380.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="notifyMDS" id="BPMNShape_notifyMDS">
-        <omgdc:Bounds height="55.0" width="105.0" x="580.0" y="380.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="notifyAEProducerInProgress" id="BPMNShape_notifyAEProducerInProgress">
-        <omgdc:Bounds height="55.0" width="105.0" x="298.0" y="380.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
         <omgdc:Bounds height="40.0" width="40.0" x="922.0" y="317.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
@@ -452,14 +445,23 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
       <bpmndi:BPMNShape bpmnElement="cancelTask" id="BPMNShape_cancelTask">
         <omgdc:Bounds height="55.0" width="105.0" x="500.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="timerintermediatecatchevent1" id="BPMNShape_timerintermediatecatchevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="535.0" y="114.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="538.0" y="114.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="setMDS" id="BPMNShape_setMDS">
         <omgdc:Bounds height="55.0" width="105.0" x="410.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway7" id="BPMNShape_exclusivegateway7">
         <omgdc:Bounds height="40.0" width="40.0" x="532.0" y="317.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifyAEProducerInProgress" id="BPMNShape_notifyAEProducerInProgress">
+        <omgdc:Bounds height="55.0" width="105.0" x="298.0" y="380.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifyMDS" id="BPMNShape_notifyMDS">
+        <omgdc:Bounds height="55.0" width="105.0" x="590.0" y="380.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifyAEProducerUnderProducerReivew" id="BPMNShape_notifyAEProducerUnderProducerReivew">
+        <omgdc:Bounds height="55.0" width="105.0" x="890.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
         <omgdi:waypoint x="262.0" y="260.0"></omgdi:waypoint>
@@ -547,10 +549,6 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
           <omgdc:Bounds height="14.0" width="29.0" x="949.0" y="288.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
-        <omgdi:waypoint x="552.0" y="149.0"></omgdi:waypoint>
-        <omgdi:waypoint x="552.0" y="167.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow41" id="BPMNEdge_flow41">
         <omgdi:waypoint x="441.0" y="97.0"></omgdi:waypoint>
         <omgdi:waypoint x="500.0" y="97.0"></omgdi:waypoint>
@@ -588,7 +586,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
       <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
         <omgdi:waypoint x="552.0" y="357.0"></omgdi:waypoint>
         <omgdi:waypoint x="551.0" y="406.0"></omgdi:waypoint>
-        <omgdi:waypoint x="580.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="590.0" y="407.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="47.0" x="552.0" y="357.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
@@ -602,13 +600,17 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS PRODUCER MDS LIST 
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
-        <omgdi:waypoint x="685.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="695.0" y="407.0"></omgdi:waypoint>
         <omgdi:waypoint x="705.0" y="406.0"></omgdi:waypoint>
         <omgdi:waypoint x="705.0" y="288.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
         <omgdi:waypoint x="295.0" y="337.0"></omgdi:waypoint>
         <omgdi:waypoint x="330.0" y="337.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow51" id="BPMNEdge_flow51">
+        <omgdi:waypoint x="553.0" y="144.0"></omgdi:waypoint>
+        <omgdi:waypoint x="552.0" y="167.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
