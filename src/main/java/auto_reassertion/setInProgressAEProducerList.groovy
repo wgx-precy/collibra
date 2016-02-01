@@ -20,7 +20,7 @@ if(debug){
 if(arrayAEProducer.size()==0){
   inProgressAEProducerEmpty = true;
 }
-arrayAEProducer.each { men ->
+arrayAEProducer.each { mem ->
   if (inProgressAEProducer != "") {
         inProgressAEProducer = inProgressAEProducer + ",user(" + mem.user.getUserName() + ")";
       } else {
@@ -36,6 +36,5 @@ if(debug){
   loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducer=========="+inProgressAEProducer);
   loggerComponent.info("[[ DEBUG ]] - ==========inProgressAEProducerEmpty=========="+inProgressAEProducerEmpty);
 }
-
 loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST SCRIPT END******");
 

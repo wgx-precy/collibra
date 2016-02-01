@@ -20,7 +20,7 @@ if(debug){
 if(arrayMDS.size()==0){
   inProgressProducerMDSEmpty = true;
 }
-arrayMDS.each { men ->
+arrayMDS.each { mem ->
   if (inProgressProducerMDS != "") {
       inProgressProducerMDS = inProgressProducerMDS + ",user(" + mem.user.getUserName() + ")"  
     } else {

@@ -5,7 +5,6 @@ if(debug){
 }
 
 def underProducerReviewAssertions = [];
-def count = 0;
 def underProducerReviewAssertionsEmpty = false;
 vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion ->
   assertionId = assertion.getId();
@@ -14,7 +13,6 @@ vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion ->
       loggerComponent.info("[[ DEBUG ]] - ========== assertion uuid ========== " + assertion.getId());
     }
    	underProducerReviewAssertions.add(assertionId);
-    counter = counter + 1;
   }
 }
 underProducerReviewAssertions.unique();
