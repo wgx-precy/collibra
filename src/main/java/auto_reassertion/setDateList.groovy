@@ -4,8 +4,14 @@ import java.text.SimpleDateFormat
 
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT BEGIN******");
 if(debug){
-	loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
-	loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
+	loggerComponent.info("[[ DEBUG ]] - ==========YEAR INPUTS==========" + yearInput);
+	loggerComponent.info("[[ DEBUG ]] - ==========DATE INPUTS==========" + dateInputs);
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_status_InProgress==========" + UUID_status_InProgress);
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_status_UnderProducerReview==========" + UUID_status_UnderProducerReview);
+	loggerComponent.info("[[ DEBUG ]] - ==========assertionVocabularyID==========" + assertionVocabularyID);
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_AEProducer==========" + UUID_Role_AEProducer);
+	loggerComponent.info("[[ DEBUG ]] - ==========UUID_Role_MDS==========" + UUID_Role_MDS);
+	loggerComponent.info("[[ DEBUG ]] - ==========debug==========" + debug);
 }
 
 int year = Calendar.getInstance().get(Calendar.YEAR);
@@ -35,6 +41,6 @@ if(year.toString()>yearInput) {
 
 execution.setVariable('notificationDateList', notificationDateList);
 if(debug){
-	loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
+	loggerComponent.info("[[ DEBUG ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
 }
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");

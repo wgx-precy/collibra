@@ -21,7 +21,7 @@ def getNextNotificationDate ={List<Date> notificationDateList->
 		Date nextNotifcationDate;
 		/*Loop through the notification Date List, and find the next one*/
 		if(debug){
-			loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
+			loggerComponent.info("[[ DEBUG ]] - ==========notificationDateList=========="+notificationDateList);
 		}
 		for (notifcationDate in notificationDateList){
 			if(currentDate < notifcationDate){
@@ -38,14 +38,14 @@ def getNextNotificationDate ={List<Date> notificationDateList->
 	}
 def testNotificationDate = getNextNotificationDate(notificationDateList);
 if(debug){
-	loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+testNotificationDate);
+	loggerComponent.info("[[ DEBUG ]] - ==========testNotificationDate=========="+testNotificationDate);
 }
 use( TimeCategory ) {
     currentDate = currentDate+ 1.minutes;
 }
 String nextNotificationDate = getISO8601Date(currentDate);
 if(debug){
-	loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
+	loggerComponent.info("[[ DEBUG ]] - ==========nextCertificationDate=========="+nextNotificationDate);
 }
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
