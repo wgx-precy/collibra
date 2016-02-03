@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
   <collaboration id="Collaboration">
-    <participant id="createAssertionAutoNotification" name="Create Assertion Auto Notification" processRef="createAssertionAutoNotificationWorkflowV3"></participant>
+    <participant id="createAssertionAutoNotification" name="Create Assertion Auto Notification" processRef="createAssertionAutoNotificationWorkflowV4"></participant>
   </collaboration>
-  <process id="createAssertionAutoNotificationWorkflowV3" name="Create Assertion Auto-notification Test V3" isExecutable="true">
+  <process id="createAssertionAutoNotificationWorkflowV4" name="Create Assertion Auto-notification Test V4" isExecutable="true">
     <documentation>Assertion Catalog Auto-notification</documentation>
-    <laneSet id="laneSet_createAssertionAutoNotificationWorkflowV3">
+    <laneSet id="laneSet_createAssertionAutoNotificationWorkflowV4">
       <lane id="lane1">
         <flowNodeRef>startevent1</flowNodeRef>
         <flowNodeRef>exclusivegateway2</flowNodeRef>
@@ -83,26 +83,20 @@ def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
 String nextNotificationDate;
 
 if(debug) {
-//	nextDay = currentDate;
-//	use( TimeCategory ) {
-//	    nextDay = nextDay+ 1.minutes;
-//	}
-//	nextNotificationDate = getISO8601Date(nextDay);
-//	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	currentDate = currentDate;
+	use( TimeCategory ) {
+	    currentDate = currentDate+ 1.minutes;
+	}
+	nextNotificationDate = getISO8601Date(currentDate);
+	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', currentDate);
 } else {
 	nextDay = getNextNotificationDate(notificationDateList);
 	nextNotificationDate = getISO8601Date(nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========isoTestNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', nextDay);
 }
-
-currentDate = currentDate;
-use( TimeCategory ) {
-    currentDate = currentDate+ 1.minutes;
-}
-nextNotificationDate = getISO8601Date(currentDate);
-loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
-execution.setVariable('nextDay', currentDate);
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");

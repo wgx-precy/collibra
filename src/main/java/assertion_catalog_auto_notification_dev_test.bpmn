@@ -83,26 +83,20 @@ def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
 String nextNotificationDate;
 
 if(debug) {
-//	nextDay = currentDate;
-//	use( TimeCategory ) {
-//	    nextDay = nextDay+ 1.minutes;
-//	}
-//	nextNotificationDate = getISO8601Date(nextDay);
-//	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	currentDate = currentDate;
+	use( TimeCategory ) {
+	    currentDate = currentDate+ 5.minutes;
+	}
+	nextNotificationDate = getISO8601Date(currentDate);
+	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', currentDate);
 } else {
 	nextDay = getNextNotificationDate(notificationDateList);
 	nextNotificationDate = getISO8601Date(nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========isoTestNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', nextDay);
 }
-
-currentDate = currentDate;
-use( TimeCategory ) {
-    currentDate = currentDate+ 1.minutes;
-}
-nextNotificationDate = getISO8601Date(currentDate);
-loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
-execution.setVariable('nextDay', currentDate);
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
@@ -298,7 +292,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END*****
     <sequenceFlow id="flow36" name="terminate true" sourceRef="exclusivegateway6" targetRef="endevent1">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${taskTerminate}]]></conditionExpression>
     </sequenceFlow>
-    <userTask id="cancelTask" name="Next trigger day is ${nextDay}" activiti:candidateUsers="user(${startUser})">
+    <userTask id="cancelTask" name="Next trigger time is ${nextDay}" activiti:candidateUsers="user(${startUser})">
       <extensionElements>
         <activiti:formProperty id="cancelTask" name="Cancel Task" type="button"></activiti:formProperty>
       </extensionElements>
@@ -416,9 +410,36 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
 </script>
     </scriptTask>
     <sequenceFlow id="flow18" sourceRef="setAEProducerUnderProducerReview" targetRef="exclusivegateway5"></sequenceFlow>
-    <serviceTask id="notifyAEProducerInProgress" name="notify AE-Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender"></serviceTask>
-    <serviceTask id="notifyMDS" name="notify MDS" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender"></serviceTask>
-    <serviceTask id="notifyAEProducerUnderProducerReivew" name="notify AE-Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender"></serviceTask>
+    <serviceTask id="notifyAEProducerInProgress" name="notify AE-Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${inProgressAEProducer}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[assertion-auto-notification]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="notifyMDS" name="notify MDS" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${inProgressProducerMDS}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[assertion-auto-notification]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="notifyAEProducerUnderProducerReivew" name="notify AE-Producer" activiti:class="com.collibra.dgc.core.workflow.activiti.delegate.MailSender">
+      <extensionElements>
+        <activiti:field name="mailTo">
+          <activiti:expression><![CDATA[${underProducerReviewAEProducer}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="template">
+          <activiti:string><![CDATA[assertion-auto-notification]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
     <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
@@ -563,8 +584,8 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow39" id="BPMNEdge_flow39">
         <omgdi:waypoint x="942.0" y="317.0"></omgdi:waypoint>
-        <omgdi:waypoint x="941.0" y="45.0"></omgdi:waypoint>
-        <omgdi:waypoint x="382.0" y="45.0"></omgdi:waypoint>
+        <omgdi:waypoint x="942.0" y="45.0"></omgdi:waypoint>
+        <omgdi:waypoint x="383.0" y="46.0"></omgdi:waypoint>
         <omgdi:waypoint x="385.0" y="70.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="29.0" x="949.0" y="288.0"></omgdc:Bounds>
@@ -583,7 +604,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow43" id="BPMNEdge_flow43">
         <omgdi:waypoint x="995.0" y="407.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1017.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1016.0" y="406.0"></omgdi:waypoint>
         <omgdi:waypoint x="1017.0" y="46.0"></omgdi:waypoint>
         <omgdi:waypoint x="382.0" y="46.0"></omgdi:waypoint>
         <omgdi:waypoint x="385.0" y="70.0"></omgdi:waypoint>

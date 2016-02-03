@@ -40,26 +40,20 @@ def getNextNotificationDate ={List<Date> notificationDateList->
 String nextNotificationDate;
 
 if(debug) {
-//	nextDay = currentDate;
-//	use( TimeCategory ) {
-//	    nextDay = nextDay+ 1.minutes;
-//	}
-//	nextNotificationDate = getISO8601Date(nextDay);
-//	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	currentDate = currentDate;
+	use( TimeCategory ) {
+	    currentDate = currentDate+ 5.minutes;
+	}
+	nextNotificationDate = getISO8601Date(currentDate);
+	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', currentDate);
 } else {
 	nextDay = getNextNotificationDate(notificationDateList);
 	nextNotificationDate = getISO8601Date(nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+nextDay);
 	loggerComponent.info("[[ LOGGING ]] - ==========isoTestNotificationDate=========="+nextNotificationDate);
+	execution.setVariable('nextDay', nextDay);
 }
-
-currentDate = currentDate;
-use( TimeCategory ) {
-    currentDate = currentDate+ 1.minutes;
-}
-nextNotificationDate = getISO8601Date(currentDate);
-loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
-execution.setVariable('nextDay', currentDate);
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
