@@ -59,10 +59,10 @@ def getISO8601Date = { Date date-&gt;
 		String nowAsISO = df.format(date);
 		nowAsISO;
 	}
-
 def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
 		Date nextNotifcationDate;
 		/*Loop through the notification Date List, and find the next one*/
+		currentDate =  new Date();
 		if(debug){
 			loggerComponent.info("[[ DEBUG ]] - ==========notificationDateList=========="+notificationDateList);
 		}
@@ -90,6 +90,7 @@ if(debug) {
 	nextNotificationDate = getISO8601Date(currentDate);
 	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
 	execution.setVariable('nextDay', currentDate);
+	nextDay = getNextNotificationDate(notificationDateList);
 } else {
 	nextDay = getNextNotificationDate(notificationDateList);
 	nextNotificationDate = getISO8601Date(nextDay);
@@ -99,6 +100,10 @@ if(debug) {
 }
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
+if(debug){
+			loggerComponent.info("[[ DEBUG ]] - ==========taskTerminate=========="+taskTerminate);
+			loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+		}
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
 </script>
     </scriptTask>
@@ -504,7 +509,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
         <omgdc:Bounds height="55.0" width="105.0" x="298.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="notifyMDS" id="BPMNShape_notifyMDS">
-        <omgdc:Bounds height="55.0" width="105.0" x="590.0" y="380.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="580.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="notifyAEProducerUnderProducerReivew" id="BPMNShape_notifyAEProducerUnderProducerReivew">
         <omgdc:Bounds height="55.0" width="105.0" x="890.0" y="380.0"></omgdc:Bounds>
@@ -564,7 +569,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow35" id="BPMNEdge_flow35">
         <omgdi:waypoint x="532.0" y="187.0"></omgdi:waypoint>
-        <omgdi:waypoint x="130.0" y="186.0"></omgdi:waypoint>
+        <omgdi:waypoint x="128.0" y="184.0"></omgdi:waypoint>
         <omgdi:waypoint x="130.0" y="233.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="71.0" x="431.0" y="165.0"></omgdc:Bounds>
@@ -628,7 +633,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
       <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
         <omgdi:waypoint x="552.0" y="357.0"></omgdi:waypoint>
         <omgdi:waypoint x="551.0" y="406.0"></omgdi:waypoint>
-        <omgdi:waypoint x="590.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="580.0" y="407.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="14.0" width="47.0" x="552.0" y="357.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
@@ -642,7 +647,7 @@ loggerComponent.info("[[ LOGGING ]] - ********SET IN PROGRESS AE PRODUCER LIST S
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
-        <omgdi:waypoint x="695.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="685.0" y="407.0"></omgdi:waypoint>
         <omgdi:waypoint x="705.0" y="406.0"></omgdi:waypoint>
         <omgdi:waypoint x="705.0" y="288.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>

@@ -16,10 +16,10 @@ def getISO8601Date = { Date date->
 		String nowAsISO = df.format(date);
 		nowAsISO;
 	}
-
 def getNextNotificationDate ={List<Date> notificationDateList->
 		Date nextNotifcationDate;
 		/*Loop through the notification Date List, and find the next one*/
+		currentDate =  new Date();
 		if(debug){
 			loggerComponent.info("[[ DEBUG ]] - ==========notificationDateList=========="+notificationDateList);
 		}
@@ -40,13 +40,14 @@ def getNextNotificationDate ={List<Date> notificationDateList->
 String nextNotificationDate;
 
 if(debug) {
-	currentDate = currentDate;
+	//currentDate = currentDate;
 	use( TimeCategory ) {
 	    currentDate = currentDate+ 5.minutes;
 	}
 	nextNotificationDate = getISO8601Date(currentDate);
 	loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
 	execution.setVariable('nextDay', currentDate);
+	nextDay = getNextNotificationDate(notificationDateList);
 } else {
 	nextDay = getNextNotificationDate(notificationDateList);
 	nextNotificationDate = getISO8601Date(nextDay);
@@ -56,4 +57,8 @@ if(debug) {
 }
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
+if(debug){
+			loggerComponent.info("[[ DEBUG ]] - ==========taskTerminate=========="+taskTerminate);
+			loggerComponent.info("[[ DEBUG ]] - ==========nextNotificationDate=========="+nextNotificationDate);
+		}
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
