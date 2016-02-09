@@ -20,7 +20,7 @@ if(debug){
 if(arrayAEProducer.size()==0){
 	underProducerReviewAEProducerEmpty = true;
 }
-arrayAEProducer.each { men ->
+arrayAEProducer.each { mem ->
   if (underProducerReviewAEProducer != "") {
         underProducerReviewAEProducer = underProducerReviewAEProducer + ",user(" + mem.user.getUserName() + ")";
       } else {

@@ -5,7 +5,6 @@ if(debug){
 }
 
 def inProgressAssertions = [];
-def count = 0;
 def inProgressAssertionsEmpty = false;
 vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion ->
   assertionId = assertion.getId();
@@ -14,7 +13,6 @@ vocabularyComponent.getTerms(assertionVocabularyID,0,0).each{ assertion ->
       loggerComponent.info("[[ DEBUG ]] - ========== assertion uuid ========== " + assertion.getId());
     }
    	inProgressAssertions.add(assertionId);
-    counter = counter + 1;
   }
 }
 inProgressAssertions.unique();
