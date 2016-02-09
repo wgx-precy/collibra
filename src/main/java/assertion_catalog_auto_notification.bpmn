@@ -34,7 +34,7 @@
         <activiti:formProperty id="dateInputs" name="Target Dates(1/7,2/5,3/7)" type="string" default="1/29,1/30" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_status_InProgress" name="UUID STATUS IN PROGRESS" type="string" default="00000000-0000-0000-0000-000000005019" readable="false" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_status_UnderProducerReview" name="UUID STATUS UNDER PRODUCER REVIEW" type="string" default="7868232e-6af6-4e4a-b6b9-4e9ee0bdd223" readable="false" required="true"></activiti:formProperty>
-        <activiti:formProperty id="assertionVocabularyID" name="ASSERTION VOCABULARY ID" type="string" default="3a38699d-c93a-44af-8664-388e0f9e5db4" readable="false" required="true"></activiti:formProperty>
+        <activiti:formProperty id="assertionVocabularyID" name="ASSERTION VOCABULARY ID" type="string" default="ccd5bc9b-71c2-42e0-aa75-84503e27fdad" readable="false" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_Role_AEProducer" name="UUID ROLE AE PRODUCER" type="string" default="5d32fa71-8f2a-4cf5-a6ac-938d2529ad93" readable="false" required="true"></activiti:formProperty>
         <activiti:formProperty id="UUID_Role_MDS" name="UUID ROLE MDS" type="string" default="c70d49a5-2797-4e4e-a77b-30029e444184" readable="false"></activiti:formProperty>
         <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
@@ -83,7 +83,7 @@ def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
 String nextNotificationDate;
 
 if(debug) {
-	currentDate = currentDate;
+	//currentDate = currentDate;
 	use( TimeCategory ) {
 	    currentDate = currentDate+ 5.minutes;
 	}
