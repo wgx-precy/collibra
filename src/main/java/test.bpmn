@@ -21,6 +21,7 @@
       <extensionElements>
         <activiti:formProperty id="yearInput" name="Target Year" type="string" default="2016"></activiti:formProperty>
         <activiti:formProperty id="dateInputs" name="Notification Dates (mm/dd)" type="string" default="1/21,1/22,1/23"></activiti:formProperty>
+        <activiti:formProperty id="debug" name="Debug" type="boolean" default="true" readable="false" required="true"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <scriptTask id="setTimeList" name="set time list" activiti:async="true" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -29,38 +30,47 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT BEGIN******");
-loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
-loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========YEAR INPUTS==========" + yearInput);
+	loggerComponent.info("[[ LOGGING ]] - ==========DATE INPUTS==========" + dateInputs);
+}
 
-int year = Calendar.getInstance().get(Calendar.YEAR)
+int year = Calendar.getInstance().get(Calendar.YEAR);
 
 /*Obtain and sort the provided dates (MM/dd)entered on start form*/
-List&lt;Date&gt; notificationDateList	= []
-List&lt;String&gt; notificationDatStringList = utility.toList(dateInputs)
-notificationDatStringList.sort()
+List&lt;Date&gt; notificationDateList	= [];
+List&lt;String&gt; notificationDatStringList = utility.toList(dateInputs);
+notificationDatStringList.sort();
 
-notificationDatStringList.each {date -&gt;
+/*Date list validation*/
+notificationDatStringList.each { date -&gt;
 	try{
-		validDate = new SimpleDateFormat('MM/dd/yyyy').parse(date.concat('/').concat(year.toString()))
-		notificationDateList.add(validDate)
-	}catch(java.text.ParseException e){
-		dgcError = new DGCException("${date} - Dates must be in MM/DD format")
-		dgcError.setTitleCode ("Unparseable Date")
+		validDate = new SimpleDateFormat('MM/dd/yyyy HH:mm:ss').parse(date.concat('/').concat(yearInput).concat(' 9:00:00'));
+		notificationDateList.add(validDate);
+	}catch(all){
+		dgcError = new DGCException("Dates must be in MM/DD format");
+		loggerComponent.info("[[ LOGGING ]] - ==========after dgcError==========");
+		dgcError.setTitleCode ("Unparseable Date");
+		loggerComponent.info("[[ LOGGING ]] - ==========after dettitle code==========");
 		throw dgcError
 	}
 }
-
+/*Target year validation*/
 if(year.toString()&gt;yearInput) {
-	dgcError = new DGCException("${yearInput} - Dates must be equal or larger than ${year}")
-	dgcError.setTitleCode ("Invalid target year")
-	throw dgcError
+	dgcError = new DGCException("Dates must be equal or larger than");
+	loggerComponent.info("[[ LOGGING ]] - ==========after dgcError==========");
+	dgcError.setTitleCode ("Invalid target year");
+	loggerComponent.info("[[ LOGGING ]] - ==========after dettitle code==========");
+	throw dgcError;
 }
 
 execution.setVariable('notificationDateList', notificationDateList);
-loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========NOTIFICATION DATA LIST==========" + notificationDateList);
+}
 loggerComponent.info("[[ LOGGING ]] - ********SET DATE TIME LIST SCRIPT END******");</script>
     </scriptTask>
-    <userTask id="userForm" name="user form" activiti:candidateUsers="user(${startUser})">
+    <userTask id="userForm" name="Next trigger day is ${nextNotificationDate}" activiti:candidateUsers="user(${startUser})">
       <extensionElements>
         <activiti:formProperty id="cancel" name="Cancel Task" type="button" default="false"></activiti:formProperty>
       </extensionElements>
@@ -72,45 +82,49 @@ import groovy.time.TimeCategory
 
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT BEGIN******");
 
-// task terminate flag, set to true to end task if no more notifiy date in notification date list
-def taskTerminate = false
+/*task terminate flag, true to end task if no more notifiy date in notification date list*/
+def taskTerminate = false;
 
 Date currentDate =  new Date();
 
 def getISO8601Date = { Date date-&gt;
-		TimeZone tz = TimeZone.getTimeZone("UTC")
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
-		df.setTimeZone(tz)
-		String nowAsISO = df.format(date)
-		nowAsISO
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+		df.setTimeZone(tz);
+		String nowAsISO = df.format(date);
+		nowAsISO;
 	}
 
 def getNextNotificationDate ={List&lt;Date&gt; notificationDateList-&gt;
-		Date nextNotifcationDate
+		Date nextNotifcationDate;
 		/*Loop through the notification Date List, and find the next one*/
-		loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
+		if(debug){
+			loggerComponent.info("[[ LOGGING ]] - ==========notificationDateList=========="+notificationDateList);
+		}
 		for (notifcationDate in notificationDateList){
 			if(currentDate &lt; notifcationDate){
-				nextNotifcationDate = notifcationDate
+				nextNotifcationDate = notifcationDate;
 				break;
 			}
 		}
 		/*If this year does not include any more recertification dates, set nextNotifcationDate to current date and terminate to true */
 		if(nextNotifcationDate == null){
-			nextNotifcationDate = currentDate
-			taskTerminate = true
+			nextNotifcationDate = currentDate;
+			taskTerminate = true;
 		}	
-		nextNotifcationDate
+		nextNotifcationDate;
 	}
 def testNotificationDate = getNextNotificationDate(notificationDateList);
-loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+testNotificationDate);
-
-use( TimeCategory ) {
-    currentDate = currentDate+ 1.minutes
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========testNotificationDate=========="+testNotificationDate);
 }
-
+use( TimeCategory ) {
+    currentDate = currentDate+ 1.minutes;
+}
 String nextNotificationDate = getISO8601Date(currentDate);
-loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
+if(debug){
+	loggerComponent.info("[[ LOGGING ]] - ==========nextCertificationDate=========="+nextNotificationDate);
+}
 execution.setVariable('nextNotificationDate', nextNotificationDate);
 execution.setVariable('taskTerminate', taskTerminate);
 loggerComponent.info("[[ LOGGING ]] - ********SET NEXT NOTIFICATION DATE SCRIPT END******");
